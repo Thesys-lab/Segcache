@@ -1,0 +1,3 @@
+add_library(bench_storage_LHD storage_LHD.c)
+
+target_link_libraries(bench_storage_LHD)
