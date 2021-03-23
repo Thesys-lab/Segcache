@@ -1,0 +1,961 @@
+==> log/blender_adaptive_large_seg_merge <==
+find TTL 60: perc 0.3900, find TTL 300: perc 0.2400, find TTL 3600: perc 0.1300, find TTL 600: perc 0.1200, find TTL 14400: perc 0.1200, 
+trace_conf/large/blender_adaptive.conf total benchmark runtime: 385.12 s, throughput 0.72 M QPS
+average operation latency: 1379.75 ns, miss ratio 0.3754
+op              get        258202105(0.9250)
+op              set         20923424(0.0750)
+
+==> log/blender_adaptive_large_slab <==
+find TTL 60: perc 0.3900, find TTL 300: perc 0.2400, find TTL 3600: perc 0.1300, find TTL 600: perc 0.1200, find TTL 14400: perc 0.1200, 
+trace_conf/large/blender_adaptive.conf total benchmark runtime: 396.56 s, throughput 0.70 M QPS
+average operation latency: 1419.38 ns, miss ratio 0.4035
+op              get        258202105(0.9242)
+op              set         21190327(0.0758)
+
+==> log/blender_adaptive_medium_seg_merge <==
+find TTL 60: perc 0.3900, find TTL 300: perc 0.2400, find TTL 3600: perc 0.1300, find TTL 600: perc 0.1200, find TTL 14400: perc 0.1200, 
+trace_conf/medium/blender_adaptive.conf total benchmark runtime: 392.91 s, throughput 0.71 M QPS
+average operation latency: 1399.61 ns, miss ratio 0.3814
+op              get        258202105(0.9197)
+op              set         22528886(0.0803)
+
+==> log/blender_adaptive_medium_slab <==
+find TTL 60: perc 0.3900, find TTL 300: perc 0.2400, find TTL 3600: perc 0.1300, find TTL 600: perc 0.1200, find TTL 14400: perc 0.1200, 
+trace_conf/medium/blender_adaptive.conf total benchmark runtime: 371.50 s, throughput 0.76 M QPS
+average operation latency: 1312.67 ns, miss ratio 0.4144
+op              get        258202105(0.9123)
+op              set         24813457(0.0877)
+
+==> log/blender_adaptive_small_seg_merge <==
+find TTL 60: perc 0.3900, find TTL 300: perc 0.2400, find TTL 3600: perc 0.1300, find TTL 600: perc 0.1200, find TTL 14400: perc 0.1200, 
+trace_conf/small/blender_adaptive.conf total benchmark runtime: 406.58 s, throughput 0.70 M QPS
+average operation latency: 1432.97 ns, miss ratio 0.3937
+op              get        258202105(0.9100)
+op              set         25528928(0.0900)
+
+==> log/blender_adaptive_small_slab <==
+find TTL 60: perc 0.3900, find TTL 300: perc 0.2400, find TTL 3600: perc 0.1300, find TTL 600: perc 0.1200, find TTL 14400: perc 0.1200, 
+trace_conf/small/blender_adaptive.conf total benchmark runtime: 366.56 s, throughput 0.78 M QPS
+average operation latency: 1275.47 ns, miss ratio 0.4280
+op              get        258202105(0.8984)
+op              set         29193960(0.1016)
+
+==> log/content_recommender_large_seg_merge <==
+find TTL 500: perc 1.0000, 
+trace_conf/large/content_recommender.conf total benchmark runtime: 2969.18 s, throughput 0.74 M QPS
+average operation latency: 1348.38 ns, miss ratio 0.0297
+op              get       2125566076(0.9653)
+op              set         76468821(0.0347)
+
+==> log/content_recommender_large_slab <==
+find TTL 500: perc 1.0000, 
+trace_conf/large/content_recommender.conf total benchmark runtime: 2425.59 s, throughput 0.92 M QPS
+average operation latency: 1084.23 ns, miss ratio 0.0478
+op              get       2125566076(0.9501)
+op              set        111575246(0.0499)
+
+==> log/content_recommender_medium_seg_merge <==
+find TTL 500: perc 1.0000, 
+trace_conf/medium/content_recommender.conf total benchmark runtime: 2656.12 s, throughput 0.84 M QPS
+average operation latency: 1189.81 ns, miss ratio 0.0433
+op              get       2125566076(0.9521)
+op              set        106829700(0.0479)
+
+==> log/content_recommender_medium_slab <==
+find TTL 500: perc 1.0000, 
+trace_conf/medium/content_recommender.conf total benchmark runtime: 2419.25 s, throughput 0.93 M QPS
+average operation latency: 1071.68 ns, miss ratio 0.0554
+op              get       2125566076(0.9416)
+op              set        131875438(0.0584)
+
+==> log/content_recommender_small_seg_merge <==
+find TTL 500: perc 1.0000, 
+trace_conf/small/content_recommender.conf total benchmark runtime: 2877.89 s, throughput 0.80 M QPS
+average operation latency: 1246.96 ns, miss ratio 0.0791
+op              get       2125566076(0.9210)
+op              set        182348998(0.0790)
+
+==> log/content_recommender_small_slab <==
+find TTL 500: perc 1.0000, 
+trace_conf/small/content_recommender.conf total benchmark runtime: 2555.30 s, throughput 0.91 M QPS
+average operation latency: 1098.24 ns, miss ratio 0.0870
+op              get       2125566076(0.9135)
+op              set        201152808(0.0865)
+
+==> log/expandodo_large_seg_merge <==
+find TTL 86400: perc 1.0000, 
+trace_conf/large/expandodo.conf total benchmark runtime: 1837.16 s, throughput 0.55 M QPS
+average operation latency: 1802.63 ns, miss ratio 0.1203
+op              get        656707013(0.6444)
+op              set        141425042(0.1388)
+op           delete        221025513(0.2169)
+
+==> log/expandodo_large_slab <==
+find TTL 86400: perc 1.0000, 
+trace_conf/large/expandodo.conf total benchmark runtime: 1445.18 s, throughput 0.70 M QPS
+average operation latency: 1428.03 ns, miss ratio 0.1093
+op              get        656707013(0.6489)
+op              set        134279925(0.1327)
+op           delete        221025513(0.2184)
+
+==> log/expandodo_medium_seg_merge <==
+find TTL 86400: perc 1.0000, 
+trace_conf/medium/expandodo.conf total benchmark runtime: 1624.93 s, throughput 0.63 M QPS
+average operation latency: 1578.04 ns, miss ratio 0.1379
+op              get        656707013(0.6378)
+op              set        151984912(0.1476)
+op           delete        221025513(0.2146)
+
+==> log/expandodo_medium_slab <==
+find TTL 86400: perc 1.0000, 
+trace_conf/medium/expandodo.conf total benchmark runtime: 1504.26 s, throughput 0.68 M QPS
+average operation latency: 1473.39 ns, miss ratio 0.1253
+op              get        656707013(0.6432)
+op              set        143220862(0.1403)
+op           delete        221025513(0.2165)
+
+==> log/expandodo_small_seg_merge <==
+find TTL 86400: perc 1.0000, 
+trace_conf/small/expandodo.conf total benchmark runtime: 1782.68 s, throughput 0.58 M QPS
+average operation latency: 1713.31 ns, miss ratio 0.1550
+op              get        656707013(0.6312)
+op              set        162756522(0.1564)
+op           delete        221025513(0.2124)
+
+==> log/expandodo_small_slab <==
+find TTL 86400: perc 1.0000, 
+trace_conf/small/expandodo.conf total benchmark runtime: 1512.53 s, throughput 0.68 M QPS
+average operation latency: 1465.90 ns, miss ratio 0.1422
+op              get        656707013(0.6365)
+op              set        154079095(0.1493)
+op           delete        221025513(0.2142)
+
+==> log/gizmoduck_large_seg_merge <==
+find TTL 432000: perc 1.0000, 
+trace_conf/large/gizmoduck.conf total benchmark runtime: 4188.95 s, throughput 1.57 M QPS
+average operation latency: 636.97 ns, miss ratio 0.0070
+op              get       6491794085(0.9871)
+op             gets         10332164(0.0016)
+op              set         53522686(0.0081)
+op              add         10490575(0.0016)
+op              cas         10196829(0.0016)
+
+==> log/gizmoduck_large_slab <==
+find TTL 432000: perc 1.0000, 
+trace_conf/large/gizmoduck.conf total benchmark runtime: 3650.36 s, throughput 1.81 M QPS
+average operation latency: 551.56 ns, miss ratio 0.0135
+op              get       6491794085(0.9809)
+op             gets         10332164(0.0016)
+op              set         95467447(0.0144)
+op              add         10490575(0.0016)
+op              cas         10196829(0.0015)
+
+==> log/gizmoduck_lru_large_seg_merge <==
+find TTL 43200: perc 1.0000, 
+trace_conf/large/gizmoduck_lru.conf total benchmark runtime: 3409.14 s, throughput 1.35 M QPS
+average operation latency: 739.41 ns, miss ratio 0.0128
+op              get       4394308669(0.9531)
+op             gets         56380936(0.0122)
+op              set         48920237(0.0106)
+op              add         56039318(0.0122)
+op              cas         54853992(0.0119)
+op           delete           114537(0.0000)
+
+==> log/gizmoduck_lru_large_slab <==
+find TTL 43200: perc 1.0000, 
+trace_conf/large/gizmoduck_lru.conf total benchmark runtime: 3267.87 s, throughput 1.42 M QPS
+average operation latency: 702.07 ns, miss ratio 0.0229
+op              get       4394308669(0.9441)
+op             gets         56380936(0.0121)
+op              set         92925576(0.0200)
+op              add         56039318(0.0120)
+op              cas         54853992(0.0118)
+op           delete           114537(0.0000)
+
+==> log/gizmoduck_lru_medium_seg_merge <==
+find TTL 43200: perc 1.0000, 
+trace_conf/medium/gizmoduck_lru.conf total benchmark runtime: 3668.06 s, throughput 1.28 M QPS
+average operation latency: 783.91 ns, miss ratio 0.0285
+op              get       4394308669(0.9391)
+op             gets         56380936(0.0120)
+op              set        117503954(0.0251)
+op              add         56039318(0.0120)
+op              cas         54853992(0.0117)
+op           delete           114537(0.0000)
+
+==> log/gizmoduck_lru_medium_slab <==
+find TTL 43200: perc 1.0000, 
+trace_conf/medium/gizmoduck_lru.conf total benchmark runtime: 3267.53 s, throughput 1.47 M QPS
+average operation latency: 679.94 ns, miss ratio 0.0572
+op              get       4394308669(0.9144)
+op             gets         56380936(0.0117)
+op              set        243894329(0.0508)
+op              add         56039318(0.0117)
+op              cas         54853992(0.0114)
+op           delete           114537(0.0000)
+
+==> log/gizmoduck_lru_small_seg_merge <==
+find TTL 43200: perc 1.0000, 
+trace_conf/small/gizmoduck_lru.conf total benchmark runtime: 3565.67 s, throughput 1.33 M QPS
+average operation latency: 750.33 ns, miss ratio 0.0451
+op              get       4394308669(0.9247)
+op             gets         56380936(0.0119)
+op              set        190417072(0.0401)
+op              add         56039318(0.0118)
+op              cas         54853992(0.0115)
+op           delete           114537(0.0000)
+
+==> log/gizmoduck_lru_small_slab <==
+find TTL 43200: perc 1.0000, 
+trace_conf/small/gizmoduck_lru.conf total benchmark runtime: 3215.39 s, throughput 1.54 M QPS
+average operation latency: 648.31 ns, miss ratio 0.0923
+op              get       4394308669(0.8860)
+op             gets         56380936(0.0114)
+op              set        397965355(0.0802)
+op              add         56039318(0.0113)
+op              cas         54853992(0.0111)
+op           delete           114537(0.0000)
+
+==> log/gizmoduck_medium_seg_merge <==
+find TTL 432000: perc 1.0000, 
+trace_conf/medium/gizmoduck.conf total benchmark runtime: 4224.08 s, throughput 1.57 M QPS
+average operation latency: 635.14 ns, miss ratio 0.0185
+op              get       6491794085(0.9761)
+op             gets         10332164(0.0016)
+op              set        127807154(0.0192)
+op              add         10490575(0.0016)
+op              cas         10196829(0.0015)
+
+==> log/gizmoduck_medium_slab <==
+find TTL 432000: perc 1.0000, 
+trace_conf/medium/gizmoduck.conf total benchmark runtime: 3665.39 s, throughput 1.84 M QPS
+average operation latency: 543.54 ns, miss ratio 0.0328
+op              get       6491794085(0.9627)
+op             gets         10332164(0.0015)
+op              set        220695966(0.0327)
+op              add         10490575(0.0016)
+op              cas         10196829(0.0015)
+
+==> log/gizmoduck_small_seg_merge <==
+find TTL 432000: perc 1.0000, 
+trace_conf/small/gizmoduck.conf total benchmark runtime: 3866.35 s, throughput 1.74 M QPS
+average operation latency: 574.31 ns, miss ratio 0.0310
+op              get       6491794085(0.9643)
+op             gets         10332164(0.0015)
+op              set        209296711(0.0311)
+op              add         10490575(0.0016)
+op              cas         10196829(0.0015)
+
+==> log/gizmoduck_small_slab <==
+find TTL 432000: perc 1.0000, 
+trace_conf/small/gizmoduck.conf total benchmark runtime: 3653.35 s, throughput 1.89 M QPS
+average operation latency: 528.83 ns, miss ratio 0.0582
+op              get       6491794085(0.9397)
+op             gets         10332164(0.0015)
+op              set        385507445(0.0558)
+op              add         10490575(0.0015)
+op              cas         10196829(0.0015)
+
+==> log/graph_feature_service_large_seg_merge <==
+find TTL 25920: perc 1.0000, 
+trace_conf/large/graph_feature_service.conf total benchmark runtime: 1011.66 s, throughput 0.57 M QPS
+average operation latency: 1757.73 ns, miss ratio 0.4160
+op              get        426365194(0.7408)
+op              set        149184287(0.2592)
+
+==> log/graph_feature_service_large_slab <==
+find TTL 25920: perc 1.0000, 
+trace_conf/large/graph_feature_service.conf total benchmark runtime: 993.86 s, throughput 0.59 M QPS
+average operation latency: 1699.48 ns, miss ratio 0.4349
+op              get        426365194(0.7291)
+op              set        158440984(0.2709)
+
+==> log/graph_feature_service_medium_seg_merge <==
+find TTL 25920: perc 1.0000, 
+trace_conf/medium/graph_feature_service.conf total benchmark runtime: 1004.22 s, throughput 0.58 M QPS
+average operation latency: 1734.56 ns, miss ratio 0.4232
+op              get        426365194(0.7365)
+op              set        152581032(0.2635)
+
+==> log/graph_feature_service_medium_slab <==
+find TTL 25920: perc 1.0000, 
+trace_conf/medium/graph_feature_service.conf total benchmark runtime: 1110.50 s, throughput 0.55 M QPS
+average operation latency: 1824.71 ns, miss ratio 0.4846
+op              get        426365194(0.7006)
+op              set        182221255(0.2994)
+
+==> log/graph_feature_service_small_seg_merge <==
+find TTL 25920: perc 1.0000, 
+trace_conf/small/graph_feature_service.conf total benchmark runtime: 1205.00 s, throughput 0.53 M QPS
+average operation latency: 1887.37 ns, miss ratio 0.5588
+op              get        426365194(0.6678)
+op              set        212089833(0.3322)
+
+==> log/graph_feature_service_small_slab <==
+find TTL 25920: perc 1.0000, 
+trace_conf/small/graph_feature_service.conf total benchmark runtime: 1078.11 s, throughput 0.62 M QPS
+average operation latency: 1608.41 ns, miss ratio 0.6362
+op              get        426365194(0.6361)
+op              set        243931696(0.3639)
+
+==> log/livepipeline_large_seg_merge <==
+find TTL 120: perc 0.9600, find TTL 2700: perc 0.0400, 
+trace_conf/large/livepipeline.conf total benchmark runtime: 2012.96 s, throughput 0.75 M QPS
+average operation latency: 1338.62 ns, miss ratio 0.0126
+op              get        996660361(0.6628)
+op              set        464851448(0.3091)
+op              add         12226627(0.0081)
+op           delete         30012245(0.0200)
+
+==> log/livepipeline_large_slab <==
+find TTL 120: perc 0.9600, find TTL 2700: perc 0.0400, 
+trace_conf/large/livepipeline.conf total benchmark runtime: 1986.16 s, throughput 0.76 M QPS
+average operation latency: 1312.04 ns, miss ratio 0.0221
+op              get        996660361(0.6584)
+op              set        474889769(0.3137)
+op              add         12226627(0.0081)
+op           delete         30012245(0.0198)
+
+==> log/livepipeline_medium_seg_merge <==
+find TTL 120: perc 0.9600, find TTL 2700: perc 0.0400, 
+trace_conf/medium/livepipeline.conf total benchmark runtime: 1955.60 s, throughput 0.77 M QPS
+average operation latency: 1297.98 ns, miss ratio 0.0154
+op              get        996660361(0.6615)
+op              set        467750598(0.3105)
+op              add         12226627(0.0081)
+op           delete         30012245(0.0199)
+
+==> log/livepipeline_medium_slab <==
+find TTL 120: perc 0.9600, find TTL 2700: perc 0.0400, 
+trace_conf/medium/livepipeline.conf total benchmark runtime: 2090.90 s, throughput 0.73 M QPS
+average operation latency: 1376.81 ns, miss ratio 0.0269
+op              get        996660361(0.6563)
+op              set        479756877(0.3159)
+op              add         12226627(0.0081)
+op           delete         30012245(0.0198)
+
+==> log/livepipeline_small_seg_merge <==
+find TTL 120: perc 0.9600, find TTL 2700: perc 0.0400, 
+trace_conf/small/livepipeline.conf total benchmark runtime: 2202.19 s, throughput 0.69 M QPS
+average operation latency: 1457.53 ns, miss ratio 0.0195
+op              get        996660361(0.6596)
+op              set        472010595(0.3124)
+op              add         12226627(0.0081)
+op           delete         30012245(0.0199)
+
+==> log/livepipeline_small_slab <==
+find TTL 120: perc 0.9600, find TTL 2700: perc 0.0400, 
+trace_conf/small/livepipeline.conf total benchmark runtime: 1976.49 s, throughput 0.77 M QPS
+average operation latency: 1293.75 ns, miss ratio 0.0359
+op              get        996660361(0.6524)
+op              set        488818746(0.3200)
+op              add         12226627(0.0080)
+op           delete         30012245(0.0196)
+
+==> log/media_metadata_large_seg_merge <==
+find TTL 1209600: perc 0.7500, find TTL 60: perc 0.2500, 
+trace_conf/large/media_metadata.conf total benchmark runtime: 1139.25 s, throughput 0.81 M QPS
+average operation latency: 1232.95 ns, miss ratio 0.0192
+op              get        906805550(0.9814)
+op              set         17199411(0.0186)
+op           delete               23(0.0000)
+
+==> log/media_metadata_large_slab <==
+find TTL 1209600: perc 0.7500, find TTL 60: perc 0.2500, 
+trace_conf/large/media_metadata.conf total benchmark runtime: 1024.94 s, throughput 0.90 M QPS
+average operation latency: 1105.97 ns, miss ratio 0.0224
+op              get        906805550(0.9785)
+op              set         19935439(0.0215)
+op           delete               23(0.0000)
+
+==> log/media_metadata_medium_seg_merge <==
+find TTL 1209600: perc 0.7500, find TTL 60: perc 0.2500, 
+trace_conf/medium/media_metadata.conf total benchmark runtime: 1036.39 s, throughput 0.90 M QPS
+average operation latency: 1111.90 ns, miss ratio 0.0284
+op              get        906805550(0.9729)
+op              set         25278497(0.0271)
+op           delete               23(0.0000)
+
+==> log/media_metadata_medium_slab <==
+find TTL 1209600: perc 0.7500, find TTL 60: perc 0.2500, 
+trace_conf/medium/media_metadata.conf total benchmark runtime: 964.11 s, throughput 0.97 M QPS
+average operation latency: 1034.92 ns, miss ratio 0.0278
+op              get        906805550(0.9734)
+op              set         24766035(0.0266)
+op           delete               23(0.0000)
+
+==> log/passbird_large_seg_merge <==
+find TTL 10800: perc 0.5600, find TTL 103680: perc 0.4400, 
+trace_conf/large/passbird.conf total benchmark runtime: 2365.18 s, throughput 0.67 M QPS
+average operation latency: 1501.97 ns, miss ratio 0.0111
+op              get       1426495699(0.9059)
+op             gets         14699114(0.0093)
+op              set         64362919(0.0409)
+op              add         51237416(0.0325)
+op              cas         14502829(0.0092)
+op           delete          3421868(0.0022)
+
+==> log/passbird_large_slab <==
+find TTL 10800: perc 0.5600, find TTL 103680: perc 0.4400, 
+trace_conf/large/passbird.conf total benchmark runtime: 1906.94 s, throughput 0.83 M QPS
+average operation latency: 1205.15 ns, miss ratio 0.0164
+op              get       1426495699(0.9015)
+op             gets         14699114(0.0093)
+op              set         71967678(0.0455)
+op              add         51237416(0.0324)
+op              cas         14502829(0.0092)
+op           delete          3421868(0.0022)
+
+==> log/passbird_medium_seg_merge <==
+find TTL 10800: perc 0.5600, find TTL 103680: perc 0.4400, 
+trace_conf/medium/passbird.conf total benchmark runtime: 2164.69 s, throughput 0.74 M QPS
+average operation latency: 1359.38 ns, miss ratio 0.0235
+op              get       1426495699(0.8958)
+op             gets         14699114(0.0092)
+op              set         82051417(0.0515)
+op              add         51237416(0.0322)
+op              cas         14502829(0.0091)
+op           delete          3421868(0.0021)
+
+==> log/passbird_medium_slab <==
+find TTL 10800: perc 0.5600, find TTL 103680: perc 0.4400, 
+trace_conf/medium/passbird.conf total benchmark runtime: 1902.57 s, throughput 0.85 M QPS
+average operation latency: 1176.01 ns, miss ratio 0.0413
+op              get       1426495699(0.8817)
+op             gets         14699114(0.0091)
+op              set        107461708(0.0664)
+op              add         51237416(0.0317)
+op              cas         14502829(0.0090)
+op           delete          3421868(0.0021)
+
+==> log/passbird_small_seg_merge <==
+find TTL 10800: perc 0.5600, find TTL 103680: perc 0.4400, 
+trace_conf/small/passbird.conf total benchmark runtime: 2296.48 s, throughput 0.72 M QPS
+average operation latency: 1385.22 ns, miss ratio 0.0694
+op              get       1426495699(0.8605)
+op             gets         14699114(0.0089)
+op              set        147486696(0.0890)
+op              add         51237416(0.0309)
+op              cas         14502829(0.0087)
+op           delete          3421868(0.0021)
+
+==> log/passbird_small_slab <==
+find TTL 10800: perc 0.5600, find TTL 103680: perc 0.4400, 
+trace_conf/small/passbird.conf total benchmark runtime: 2117.99 s, throughput 0.85 M QPS
+average operation latency: 1172.93 ns, miss ratio 0.1730
+op              get       1426495699(0.7900)
+op             gets         14699114(0.0081)
+op              set        295378581(0.1636)
+op              add         51237416(0.0284)
+op              cas         14502829(0.0080)
+op           delete          3421868(0.0019)
+
+==> log/pinkfloyd_large_seg_merge <==
+find TTL 3600: perc 0.6700, find TTL 7200: perc 0.3300, 
+trace_conf/large/pinkfloyd.conf total benchmark runtime: 2357.65 s, throughput 0.79 M QPS
+average operation latency: 1269.89 ns, miss ratio 0.2271
+op              get       1598597162(0.8610)
+op              set        248800207(0.1340)
+op           delete          9188473(0.0049)
+
+==> log/pinkfloyd_large_slab <==
+find TTL 3600: perc 0.6700, find TTL 7200: perc 0.3300, 
+trace_conf/large/pinkfloyd.conf total benchmark runtime: 2275.17 s, throughput 0.82 M QPS
+average operation latency: 1221.67 ns, miss ratio 0.2299
+op              get       1598597162(0.8584)
+op              set        254566024(0.1367)
+op           delete          9188473(0.0049)
+
+==> log/pinkfloyd_medium_seg_merge <==
+find TTL 3600: perc 0.6700, find TTL 7200: perc 0.3300, 
+trace_conf/medium/pinkfloyd.conf total benchmark runtime: 2498.99 s, throughput 0.75 M QPS
+average operation latency: 1333.13 ns, miss ratio 0.2377
+op              get       1598597162(0.8528)
+op              set        266752723(0.1423)
+op           delete          9188473(0.0049)
+
+==> log/pinkfloyd_medium_slab <==
+find TTL 3600: perc 0.6700, find TTL 7200: perc 0.3300, 
+trace_conf/medium/pinkfloyd.conf total benchmark runtime: 2247.57 s, throughput 0.84 M QPS
+average operation latency: 1188.96 ns, miss ratio 0.2462
+op              get       1598597162(0.8457)
+op              set        282587682(0.1495)
+op           delete          9188473(0.0049)
+
+==> log/pinkfloyd_small_seg_merge <==
+find TTL 3600: perc 0.6700, find TTL 7200: perc 0.3300, 
+trace_conf/small/pinkfloyd.conf total benchmark runtime: 2406.49 s, throughput 0.79 M QPS
+average operation latency: 1271.67 ns, miss ratio 0.2500
+op              get       1598597162(0.8447)
+op              set        284608294(0.1504)
+op           delete          9188473(0.0049)
+
+==> log/pinkfloyd_small_slab <==
+find TTL 3600: perc 0.6700, find TTL 7200: perc 0.3300, 
+trace_conf/small/pinkfloyd.conf total benchmark runtime: 2290.99 s, throughput 0.84 M QPS
+average operation latency: 1190.02 ns, miss ratio 0.2710
+op              get       1598597162(0.8304)
+op              set        317384506(0.1649)
+op           delete          9188473(0.0048)
+
+==> log/ranking_user_data_fetch_large_seg_merge <==
+find TTL 60: perc 1.0000, 
+trace_conf/large/ranking_user_data_fetch.conf total benchmark runtime: 451.95 s, throughput 1.17 M QPS
+average operation latency: 853.60 ns, miss ratio 0.3382
+op              get        508462834(0.9603)
+op              set         21005036(0.0397)
+
+==> log/ranking_user_data_fetch_large_slab <==
+find TTL 60: perc 1.0000, 
+trace_conf/large/ranking_user_data_fetch.conf total benchmark runtime: 426.97 s, throughput 1.24 M QPS
+average operation latency: 806.41 ns, miss ratio 0.3382
+op              get        508462834(0.9603)
+op              set         21008594(0.0397)
+
+==> log/ranking_user_data_fetch_medium_seg_merge <==
+find TTL 60: perc 1.0000, 
+trace_conf/medium/ranking_user_data_fetch.conf total benchmark runtime: 440.27 s, throughput 1.20 M QPS
+average operation latency: 831.53 ns, miss ratio 0.3382
+op              get        508462834(0.9603)
+op              set         21005036(0.0397)
+
+==> log/ranking_user_data_fetch_medium_slab <==
+find TTL 60: perc 1.0000, 
+trace_conf/medium/ranking_user_data_fetch.conf total benchmark runtime: 419.36 s, throughput 1.26 M QPS
+average operation latency: 792.03 ns, miss ratio 0.3382
+op              get        508462834(0.9603)
+op              set         21012847(0.0397)
+
+==> log/ranking_user_data_fetch_small_seg_merge <==
+find TTL 60: perc 1.0000, 
+trace_conf/small/ranking_user_data_fetch.conf total benchmark runtime: 411.32 s, throughput 1.29 M QPS
+average operation latency: 776.86 ns, miss ratio 0.3382
+op              get        508462834(0.9603)
+op              set         21005036(0.0397)
+
+==> log/ranking_user_data_fetch_small_slab <==
+find TTL 60: perc 1.0000, 
+trace_conf/small/ranking_user_data_fetch.conf total benchmark runtime: 419.80 s, throughput 1.26 M QPS
+average operation latency: 792.85 ns, miss ratio 0.3382
+op              get        508462834(0.9603)
+op              set         21020893(0.0397)
+
+==> log/safety_label_store_large_seg_merge <==
+find TTL 838860800: perc 1.0000, 
+trace_conf/large/safety_label_store.conf total benchmark runtime: 2094.78 s, throughput 0.76 M QPS
+average operation latency: 1319.70 ns, miss ratio 0.0363
+op              get       1460709654(0.9202)
+op             gets         23128538(0.0146)
+op              set         17917494(0.0113)
+op              add         65420563(0.0412)
+op              cas         20138452(0.0127)
+
+==> log/safety_label_store_large_slab <==
+find TTL 838860800: perc 1.0000, 
+trace_conf/large/safety_label_store.conf total benchmark runtime: 2187.05 s, throughput 1.04 M QPS
+average operation latency: 963.95 ns, miss ratio 0.5073
+op              get       1460709654(0.6438)
+op             gets         23128538(0.0102)
+op              set        699457940(0.3083)
+op              add         65420563(0.0288)
+op              cas         20138452(0.0089)
+
+==> log/safety_label_store_medium_seg_merge <==
+find TTL 838860800: perc 1.0000, 
+trace_conf/medium/safety_label_store.conf total benchmark runtime: 1939.17 s, throughput 0.82 M QPS
+average operation latency: 1214.98 ns, miss ratio 0.0441
+op              get       1460709654(0.9152)
+op             gets         23128538(0.0145)
+op              set         26649612(0.0167)
+op              add         65420563(0.0410)
+op              cas         20138452(0.0126)
+
+==> log/safety_label_store_medium_slab <==
+find TTL 838860800: perc 1.0000, 
+trace_conf/medium/safety_label_store.conf total benchmark runtime: 2148.94 s, throughput 1.12 M QPS
+average operation latency: 896.75 ns, miss ratio 0.5956
+op              get       1460709654(0.6096)
+op             gets         23128538(0.0097)
+op              set        826952992(0.3451)
+op              add         65420563(0.0273)
+op              cas         20138452(0.0084)
+
+==> log/safety_label_store_small_seg_merge <==
+find TTL 838860800: perc 1.0000, 
+trace_conf/small/safety_label_store.conf total benchmark runtime: 1995.38 s, throughput 0.81 M QPS
+average operation latency: 1231.46 ns, miss ratio 0.0634
+op              get       1460709654(0.9015)
+op             gets         23128538(0.0143)
+op              set         50937611(0.0314)
+op              add         65420563(0.0404)
+op              cas         20138452(0.0124)
+
+==> log/safety_label_store_small_slab <==
+find TTL 838860800: perc 1.0000, 
+trace_conf/small/safety_label_store.conf total benchmark runtime: 2272.74 s, throughput 1.13 M QPS
+average operation latency: 885.12 ns, miss ratio 0.7137
+op              get       1460709654(0.5689)
+op             gets         23128538(0.0090)
+op              set        998335610(0.3888)
+op              add         65420563(0.0255)
+op              cas         20138452(0.0078)
+
+==> log/search_roots_large_seg_merge <==
+find TTL 20: perc 0.9100, find TTL 300: perc 0.0700, find TTL 7200: perc 0.0200, 
+
+==> log/search_roots_large_slab <==
+find TTL 20: perc 0.9100, find TTL 300: perc 0.0700, find TTL 7200: perc 0.0200, 
+
+==> log/search_roots_medium_seg_merge <==
+find TTL 20: perc 0.9100, find TTL 300: perc 0.0700, find TTL 7200: perc 0.0200, 
+
+==> log/search_roots_medium_slab <==
+find TTL 20: perc 0.9100, find TTL 300: perc 0.0700, find TTL 7200: perc 0.0200, 
+
+==> log/search_roots_small_seg_merge <==
+find TTL 20: perc 0.9100, find TTL 300: perc 0.0700, find TTL 7200: perc 0.0200, 
+
+==> log/search_roots_small_slab <==
+find TTL 20: perc 0.9100, find TTL 300: perc 0.0700, find TTL 7200: perc 0.0200, 
+
+==> log/simclusters_core_esc_large_seg_merge <==
+find TTL 28800: perc 0.9500, find TTL 86400: perc 0.0500, 
+trace_conf/large/simclusters_core_esc.conf total benchmark runtime: 2506.81 s, throughput 0.40 M QPS
+average operation latency: 2485.89 ns, miss ratio 0.4306
+op              get        449998476(0.4462)
+op              set        558417908(0.5538)
+
+==> log/simclusters_core_esc_large_slab <==
+find TTL 28800: perc 0.9500, find TTL 86400: perc 0.0500, 
+trace_conf/large/simclusters_core_esc.conf total benchmark runtime: 1773.95 s, throughput 0.51 M QPS
+average operation latency: 1961.02 ns, miss ratio 0.1999
+op              get        449998476(0.4975)
+op              set        454603540(0.5025)
+
+==> log/simclusters_core_esc_medium_seg_merge <==
+find TTL 28800: perc 0.9500, find TTL 86400: perc 0.0500, 
+trace_conf/medium/simclusters_core_esc.conf total benchmark runtime: 2329.14 s, throughput 0.44 M QPS
+average operation latency: 2275.20 ns, miss ratio 0.4646
+op              get        449998476(0.4396)
+op              set        573710919(0.5604)
+
+==> log/simclusters_core_esc_medium_slab <==
+find TTL 28800: perc 0.9500, find TTL 86400: perc 0.0500, 
+trace_conf/medium/simclusters_core_esc.conf total benchmark runtime: 1808.79 s, throughput 0.50 M QPS
+average operation latency: 1988.17 ns, miss ratio 0.2114
+op              get        449998476(0.4946)
+op              set        459775490(0.5054)
+
+==> log/simclusters_core_esc_small_seg_merge <==
+find TTL 28800: perc 0.9500, find TTL 86400: perc 0.0500, 
+trace_conf/small/simclusters_core_esc.conf total benchmark runtime: 2379.05 s, throughput 0.44 M QPS
+average operation latency: 2268.66 ns, miss ratio 0.5201
+op              get        449998476(0.4291)
+op              set        598662192(0.5709)
+
+==> log/simclusters_core_esc_small_slab <==
+find TTL 28800: perc 0.9500, find TTL 86400: perc 0.0500, 
+trace_conf/small/simclusters_core_esc.conf total benchmark runtime: 1784.98 s, throughput 0.52 M QPS
+average operation latency: 1931.46 ns, miss ratio 0.2434
+op              get        449998476(0.4869)
+op              set        474161149(0.5131)
+
+==> log/simclusters_v2_entity_cluster_scores_large_seg_merge <==
+find TTL 28800: perc 1.0000, 
+trace_conf/large/simclusters_v2_entity_cluster_scores.conf total benchmark runtime: 5191.72 s, throughput 0.55 M QPS
+average operation latency: 1803.44 ns, miss ratio 0.4134
+op              get       1262508954(0.4386)
+op              set       1616275995(0.5614)
+
+==> log/simclusters_v2_entity_cluster_scores_large_slab <==
+find TTL 28800: perc 1.0000, 
+trace_conf/large/simclusters_v2_entity_cluster_scores.conf total benchmark runtime: 4516.33 s, throughput 0.57 M QPS
+average operation latency: 1765.52 ns, miss ratio 0.1594
+op              get       1262508954(0.4935)
+op              set       1295568596(0.5065)
+
+==> log/simclusters_v2_entity_cluster_scores_medium_seg_merge <==
+find TTL 28800: perc 1.0000, 
+trace_conf/medium/simclusters_v2_entity_cluster_scores.conf total benchmark runtime: 5622.08 s, throughput 0.52 M QPS
+average operation latency: 1912.64 ns, miss ratio 0.4615
+op              get       1262508954(0.4295)
+op              set       1676927696(0.5705)
+
+==> log/simclusters_v2_entity_cluster_scores_medium_slab <==
+find TTL 28800: perc 1.0000, 
+trace_conf/medium/simclusters_v2_entity_cluster_scores.conf total benchmark runtime: 4190.34 s, throughput 0.62 M QPS
+average operation latency: 1612.01 ns, miss ratio 0.1922
+op              get       1262508954(0.4857)
+op              set       1336940387(0.5143)
+
+==> log/simclusters_v2_entity_cluster_scores_small_seg_merge <==
+find TTL 28800: perc 1.0000, 
+trace_conf/small/simclusters_v2_entity_cluster_scores.conf total benchmark runtime: 5624.32 s, throughput 0.55 M QPS
+average operation latency: 1834.83 ns, miss ratio 0.5612
+op              get       1262508954(0.4119)
+op              set       1802803346(0.5881)
+
+==> log/simclusters_v2_entity_cluster_scores_small_slab <==
+find TTL 28800: perc 1.0000, 
+trace_conf/small/simclusters_v2_entity_cluster_scores.conf total benchmark runtime: 4387.39 s, throughput 0.63 M QPS
+average operation latency: 1590.43 ns, miss ratio 0.3183
+op              get       1262508954(0.4577)
+op              set       1496104661(0.5423)
+
+==> log/strato_negative_result_large_seg_merge <==
+find TTL 2592000: perc 1.0000, 
+trace_conf/large/strato_negative_result.conf total benchmark runtime: 2078.78 s, throughput 0.79 M QPS
+average operation latency: 1262.04 ns, miss ratio 0.0197
+op              get       1596076359(0.9690)
+op             gets          6318696(0.0038)
+op              set         21144528(0.0128)
+op              add         18525282(0.0112)
+op              cas          5091423(0.0031)
+
+==> log/strato_negative_result_large_slab <==
+find TTL 2592000: perc 1.0000, 
+trace_conf/large/strato_negative_result.conf total benchmark runtime: 1811.22 s, throughput 0.92 M QPS
+average operation latency: 1090.65 ns, miss ratio 0.0283
+op              get       1596076359(0.9611)
+op             gets          6318696(0.0038)
+op              set         34668567(0.0209)
+op              add         18525282(0.0112)
+op              cas          5091423(0.0031)
+
+==> log/strato_negative_result_medium_seg_merge <==
+find TTL 2592000: perc 1.0000, 
+trace_conf/medium/strato_negative_result.conf total benchmark runtime: 2004.29 s, throughput 0.84 M QPS
+average operation latency: 1196.56 ns, miss ratio 0.0375
+op              get       1596076359(0.9529)
+op             gets          6318696(0.0038)
+op              set         49034848(0.0293)
+op              add         18525282(0.0111)
+op              cas          5091423(0.0030)
+
+==> log/strato_negative_result_medium_slab <==
+find TTL 2592000: perc 1.0000, 
+trace_conf/medium/strato_negative_result.conf total benchmark runtime: 1785.46 s, throughput 0.96 M QPS
+average operation latency: 1040.60 ns, miss ratio 0.0631
+op              get       1596076359(0.9302)
+op             gets          6318696(0.0037)
+op              set         89789259(0.0523)
+op              add         18525282(0.0108)
+op              cas          5091423(0.0030)
+
+==> log/strato_negative_result_small_seg_merge <==
+find TTL 2592000: perc 1.0000, 
+trace_conf/small/strato_negative_result.conf total benchmark runtime: 1850.29 s, throughput 0.93 M QPS
+average operation latency: 1079.29 ns, miss ratio 0.0622
+op              get       1596076359(0.9310)
+op             gets          6318696(0.0037)
+op              set         88351344(0.0515)
+op              add         18525282(0.0108)
+op              cas          5091423(0.0030)
+
+==> log/strato_negative_result_small_slab <==
+find TTL 2592000: perc 1.0000, 
+trace_conf/small/strato_negative_result.conf total benchmark runtime: 1866.04 s, throughput 0.95 M QPS
+average operation latency: 1049.15 ns, miss ratio 0.1025
+op              get       1596076359(0.8974)
+op             gets          6318696(0.0036)
+op              set        152603193(0.0858)
+op              add         18525282(0.0104)
+op              cas          5091423(0.0029)
+
+==> log/talon_large_seg_merge <==
+find TTL 1296000: perc 1.0000, 
+trace_conf/large/talon.conf total benchmark runtime: 84.80 s, throughput 0.75 M QPS
+average operation latency: 1335.38 ns, miss ratio 0.5012
+op              get         49029476(0.7721)
+op              set          5923777(0.0933)
+op              add          8547539(0.1346)
+
+==> log/talon_large_slab <==
+find TTL 1296000: perc 1.0000, 
+trace_conf/large/talon.conf total benchmark runtime: 89.51 s, throughput 0.71 M QPS
+average operation latency: 1401.51 ns, miss ratio 0.5088
+op              get         49029476(0.7676)
+op              set          6292687(0.0985)
+op              add          8547539(0.1338)
+
+==> log/talon_medium_seg_merge <==
+find TTL 1296000: perc 1.0000, 
+trace_conf/medium/talon.conf total benchmark runtime: 85.32 s, throughput 0.75 M QPS
+average operation latency: 1332.00 ns, miss ratio 0.5129
+op              get         49029476(0.7654)
+op              set          6478918(0.1011)
+op              add          8547539(0.1334)
+
+==> log/talon_medium_slab <==
+find TTL 1296000: perc 1.0000, 
+trace_conf/medium/talon.conf total benchmark runtime: 79.93 s, throughput 0.81 M QPS
+average operation latency: 1232.11 ns, miss ratio 0.5298
+op              get         49029476(0.7558)
+op              set          7296631(0.1125)
+op              add          8547539(0.1318)
+
+==> log/talon_small_seg_merge <==
+find TTL 1296000: perc 1.0000, 
+trace_conf/small/talon.conf total benchmark runtime: 65.72 s, throughput 0.98 M QPS
+average operation latency: 1017.58 ns, miss ratio 0.5238
+op              get         49029476(0.7592)
+op              set          7006859(0.1085)
+op              add          8547539(0.1323)
+
+==> log/talon_small_slab <==
+find TTL 1296000: perc 1.0000, 
+trace_conf/small/talon.conf total benchmark runtime: 60.52 s, throughput 1.08 M QPS
+average operation latency: 922.08 ns, miss ratio 0.5454
+op              get         49029476(0.7470)
+op              set          8054604(0.1227)
+op              add          8547539(0.1302)
+
+==> log/taxi_v3_prod_large_seg_merge <==
+find TTL 43200: perc 0.5800, find TTL 3600: perc 0.4200, 
+trace_conf/large/taxi_v3_prod.conf total benchmark runtime: 2505.50 s, throughput 0.74 M QPS
+average operation latency: 1343.81 ns, miss ratio 0.7111
+op              get       1235464730(0.6626)
+op              set        629004929(0.3374)
+
+==> log/taxi_v3_prod_large_slab <==
+find TTL 43200: perc 0.5800, find TTL 3600: perc 0.4200, 
+trace_conf/large/taxi_v3_prod.conf total benchmark runtime: 2218.14 s, throughput 0.84 M QPS
+average operation latency: 1196.64 ns, miss ratio 0.7109
+op              get       1235464730(0.6665)
+op              set        618171097(0.3335)
+
+==> log/taxi_v3_prod_medium_seg_merge <==
+find TTL 43200: perc 0.5800, find TTL 3600: perc 0.4200, 
+trace_conf/medium/taxi_v3_prod.conf total benchmark runtime: 2611.23 s, throughput 0.72 M QPS
+average operation latency: 1393.49 ns, miss ratio 0.7205
+op              get       1235464730(0.6593)
+op              set        638413053(0.3407)
+
+==> log/taxi_v3_prod_medium_slab <==
+find TTL 43200: perc 0.5800, find TTL 3600: perc 0.4200, 
+trace_conf/medium/taxi_v3_prod.conf total benchmark runtime: 2232.60 s, throughput 0.84 M QPS
+average operation latency: 1197.47 ns, miss ratio 0.7221
+op              get       1235464730(0.6627)
+op              set        628961600(0.3373)
+
+==> log/taxi_v3_prod_small_seg_merge <==
+find TTL 43200: perc 0.5800, find TTL 3600: perc 0.4200, 
+trace_conf/small/taxi_v3_prod.conf total benchmark runtime: 2569.72 s, throughput 0.74 M QPS
+average operation latency: 1357.60 ns, miss ratio 0.7428
+op              get       1235464730(0.6527)
+op              set        657377472(0.3473)
+
+==> log/taxi_v3_prod_small_slab <==
+find TTL 43200: perc 0.5800, find TTL 3600: perc 0.4200, 
+trace_conf/small/taxi_v3_prod.conf total benchmark runtime: 2191.15 s, throughput 0.86 M QPS
+average operation latency: 1160.98 ns, miss ratio 0.7435
+op              get       1235464730(0.6546)
+op              set        651856484(0.3454)
+
+==> log/tweetypie_large_seg_merge <==
+find TTL 86400: perc 1.0000, 
+trace_conf/large/tweetypie.conf total benchmark runtime: 4193.36 s, throughput 1.03 M QPS
+average operation latency: 975.38 ns, miss ratio 0.0485
+op              get       3818543526(0.8882)
+op             gets         97190744(0.0226)
+op              set        109686201(0.0255)
+op              add        162195118(0.0377)
+op              cas         86416393(0.0201)
+op           delete         25171345(0.0059)
+
+==> log/tweetypie_large_slab <==
+find TTL 86400: perc 1.0000, 
+trace_conf/large/tweetypie.conf total benchmark runtime: 3686.83 s, throughput 1.18 M QPS
+average operation latency: 844.38 ns, miss ratio 0.0664
+op              get       3818543526(0.8745)
+op             gets         97190744(0.0223)
+op              set        176800992(0.0405)
+op              add        162195118(0.0371)
+op              cas         86416393(0.0198)
+op           delete         25171345(0.0058)
+
+==> log/tweetypie_medium_seg_merge <==
+find TTL 86400: perc 1.0000, 
+trace_conf/medium/tweetypie.conf total benchmark runtime: 3959.69 s, throughput 1.09 M QPS
+average operation latency: 915.10 ns, miss ratio 0.0560
+op              get       3818543526(0.8825)
+op             gets         97190744(0.0225)
+op              set        137536023(0.0318)
+op              add        162195118(0.0375)
+op              cas         86416393(0.0200)
+op           delete         25171345(0.0058)
+
+==> log/tweetypie_medium_slab <==
+find TTL 86400: perc 1.0000, 
+trace_conf/medium/tweetypie.conf total benchmark runtime: 3699.25 s, throughput 1.19 M QPS
+average operation latency: 838.59 ns, miss ratio 0.0784
+op              get       3818543526(0.8656)
+op             gets         97190744(0.0220)
+op              set        221756502(0.0503)
+op              add        162195118(0.0368)
+op              cas         86416393(0.0196)
+op           delete         25171345(0.0057)
+
+==> log/tweetypie_small_seg_merge <==
+find TTL 86400: perc 1.0000, 
+trace_conf/small/tweetypie.conf total benchmark runtime: 3874.50 s, throughput 1.13 M QPS
+average operation latency: 883.70 ns, miss ratio 0.0713
+op              get       3818543526(0.8709)
+op             gets         97190744(0.0222)
+op              set        194864414(0.0444)
+op              add        162195118(0.0370)
+op              cas         86416393(0.0197)
+op           delete         25171345(0.0057)
+
+==> log/tweetypie_small_slab <==
+find TTL 86400: perc 1.0000, 
+trace_conf/small/tweetypie.conf total benchmark runtime: 3835.69 s, throughput 1.17 M QPS
+average operation latency: 854.74 ns, miss ratio 0.0985
+op              get       3818543526(0.8509)
+op             gets         97190744(0.0217)
+op              set        298035663(0.0664)
+op              add        162195118(0.0361)
+op              cas         86416393(0.0193)
+op           delete         25171345(0.0056)
+
+==> log/wtf_req_large_seg_merge <==
+find TTL 13680: perc 0.1300, find TTL 11880: perc 0.1300, find TTL 12240: perc 0.1300, find TTL 14040: perc 0.1200, find TTL 12600: perc 0.1200, find TTL 12960: perc 0.1200, find TTL 13320: perc 0.1100, find TTL 14400: perc 0.0700, find TTL 11520: perc 0.0700, 
+trace_conf/large/wtf_req.conf total benchmark runtime: 7042.46 s, throughput 1.08 M QPS
+average operation latency: 925.51 ns, miss ratio 0.0421
+op              get       7210131071(0.9475)
+op              set        399128137(0.0525)
+
+==> log/wtf_req_large_slab <==
+find TTL 13680: perc 0.1300, find TTL 11880: perc 0.1300, find TTL 12240: perc 0.1300, find TTL 14040: perc 0.1200, find TTL 12600: perc 0.1200, find TTL 12960: perc 0.1200, find TTL 13320: perc 0.1100, find TTL 14400: perc 0.0700, find TTL 11520: perc 0.0700, 
+trace_conf/large/wtf_req.conf total benchmark runtime: 6413.67 s, throughput 1.21 M QPS
+average operation latency: 823.51 ns, miss ratio 0.0675
+op              get       7210131071(0.9258)
+op              set        578096708(0.0742)
+
+==> log/wtf_req_medium_seg_merge <==
+find TTL 13680: perc 0.1300, find TTL 11880: perc 0.1300, find TTL 12240: perc 0.1300, find TTL 14040: perc 0.1200, find TTL 12600: perc 0.1200, find TTL 12960: perc 0.1200, find TTL 13320: perc 0.1100, find TTL 14400: perc 0.0700, find TTL 11520: perc 0.0700, 
+trace_conf/medium/wtf_req.conf total benchmark runtime: 7134.40 s, throughput 1.10 M QPS
+average operation latency: 907.01 ns, miss ratio 0.0797
+op              get       7210131071(0.9166)
+op              set        655678780(0.0834)
+
+==> log/wtf_req_medium_slab <==
+find TTL 13680: perc 0.1300, find TTL 11880: perc 0.1300, find TTL 12240: perc 0.1300, find TTL 14040: perc 0.1200, find TTL 12600: perc 0.1200, find TTL 12960: perc 0.1200, find TTL 13320: perc 0.1100, find TTL 14400: perc 0.0700, find TTL 11520: perc 0.0700, 
+trace_conf/medium/wtf_req.conf total benchmark runtime: 6821.15 s, throughput 1.21 M QPS
+average operation latency: 826.62 ns, miss ratio 0.1335
+op              get       7210131071(0.8738)
+op              set       1041703287(0.1262)
+
+==> log/wtf_req_small_seg_merge <==
+find TTL 13680: perc 0.1300, find TTL 11880: perc 0.1300, find TTL 12240: perc 0.1300, find TTL 14040: perc 0.1200, find TTL 12600: perc 0.1200, find TTL 12960: perc 0.1200, find TTL 13320: perc 0.1100, find TTL 14400: perc 0.0700, find TTL 11520: perc 0.0700, 
+trace_conf/small/wtf_req.conf total benchmark runtime: 7168.61 s, throughput 1.14 M QPS
+average operation latency: 875.26 ns, miss ratio 0.1254
+op              get       7210131071(0.8803)
+op              set        980118600(0.1197)
+
+==> log/wtf_req_small_slab <==
+find TTL 13680: perc 0.1300, find TTL 11880: perc 0.1300, find TTL 12240: perc 0.1300, find TTL 14040: perc 0.1200, find TTL 12600: perc 0.1200, find TTL 12960: perc 0.1200, find TTL 13320: perc 0.1100, find TTL 14400: perc 0.0700, find TTL 11520: perc 0.0700, 
+trace_conf/small/wtf_req.conf total benchmark runtime: 6498.54 s, throughput 1.35 M QPS
+average operation latency: 742.72 ns, miss ratio 0.2032
+op              get       7210131071(0.8240)
+op              set       1539553753(0.1760)

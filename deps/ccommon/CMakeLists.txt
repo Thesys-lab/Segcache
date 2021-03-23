@@ -128,7 +128,7 @@ if (HAVE_TEST)
         check_symbol_exists(ck_assert_int_eq check.h CHECK_WORKING)
     endif(CHECK_FOUND)
     # if we don't have a working version of check, build it
-    if(NOT CHECK_WORKING OR FORCE_CHECK_BUILD)
+    if(NOT CHECK_LIBRARIES OR FORCE_CHECK_BUILD)
         set(LIBCHECK_PREFIX "${CMAKE_BINARY_DIR}/check")
         execute_process(
             COMMAND "bash" "${PROJECT_SOURCE_DIR}/ci/install-check.sh" "${LIBCHECK_PREFIX}"
@@ -142,7 +142,7 @@ if (HAVE_TEST)
             set(CHECK_ROOT_DIR "${LIBCHECK_PREFIX}")
             find_package(CHECK)
         endif(LIBCHECK_RETCODE)
-    endif(NOT CHECK_WORKING OR FORCE_CHECK_BUILD)
+    endif(NOT CHECK_LIBRARIES OR FORCE_CHECK_BUILD)
 
     # use fluxcapacitor to mock time
     if(OS_PLATFORM STREQUAL "OS_LINUX")

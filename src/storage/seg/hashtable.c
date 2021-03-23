@@ -729,6 +729,14 @@ hashtable_get(const char *key, const uint32_t klen,
     int i;
 
     uint64_t item_info;
+    static uint64_t scan_len_sum = 0;
+    static uint64_t scan_cnt = 0;
+
+    scan_cnt += 1;
+    if (scan_cnt % 100000000 == 0) {
+        printf("%.2lf\n", (double) scan_len_sum / scan_cnt);
+    }
+
     lock(first_bkt);
 
     int bkt_chain_len = GET_BUCKET_CHAIN_LEN(first_bkt) - 1;
@@ -776,6 +784,7 @@ hashtable_get(const char *key, const uint32_t klen,
 
                 __atomic_sub_fetch(&seg->r_refcount, 1, __ATOMIC_RELAXED);
 
+                scan_len_sum += i;
                 unlock(first_bkt);
                 return NULL;
             }
@@ -783,13 +792,16 @@ hashtable_get(const char *key, const uint32_t klen,
             it = (struct item *) (heap.base + heap.seg_size *
                         GET_SEG_ID(item_info) + GET_OFFSET(item_info));
 
+            scan_len_sum += i;
             unlock(first_bkt);
             return it;
         }
         bkt_chain_len -= 1;
         bkt        = (uint64_t *) (bkt[N_SLOT_PER_BUCKET - 1]);
+        scan_len_sum += 8;
     } while (bkt_chain_len >= 0);
 
+    scan_len_sum += i;
     unlock(first_bkt);
     return NULL;
 }
