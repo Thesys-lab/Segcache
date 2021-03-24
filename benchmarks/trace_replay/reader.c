@@ -46,15 +46,13 @@ static char val_array[MAX_VAL_LEN] = {'A'};
  * @return
  */
 struct reader *
-open_trace(
-        const char *trace_path, const int32_t * default_ttls)
+open_trace(const char *trace_path, const int32_t * default_ttls)
 {
     int fd;
     struct stat st;
     struct reader *reader = cc_zalloc(sizeof(struct reader));
 
     /* init reader module */
-//    cc_memset(val_array, 'A', MAX_VAL_LEN);
     for (int i=0; i<MAX_VAL_LEN; i++)
         val_array[i] = (char)('A' + i % 26);
 

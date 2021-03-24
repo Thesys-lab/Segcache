@@ -35,8 +35,6 @@ volatile static uint64_t    n_miss = 0;
 
 static delta_time_i         default_ttls[100];
 
-//extern seg_metrics_st *seg_metrics;
-
 
 #define BENCHMARK_OPTION(ACTION)                                                                    \
     ACTION(trace_path,      OPTION_TYPE_STR,    NULL,           "path to the trace")                        \
@@ -65,25 +63,24 @@ benchmark_create(struct benchmark *b, const char *config)
 //    for (int i = 0; i < MAX_VAL_LEN; i++)
 //        val_array[i] = (char)('A' + i % 26);
 
-    unsigned n_opts_all, n_opts_bench, n_opts_dbg, n_opts_storage;
+    unsigned               n_opts_all, n_opts_bench, n_opts_dbg, n_opts_storage;
     struct replay_specific bench_opts = {BENCHMARK_OPTION(OPTION_INIT)};
-    debug_options_st debug_opts = {DEBUG_OPTION(OPTION_INIT)};
+    debug_options_st       debug_opts = {DEBUG_OPTION(OPTION_INIT)};
 
-    n_opts_bench = OPTION_CARDINALITY(struct replay_specific);
-    n_opts_dbg = OPTION_CARDINALITY(debug_options_st);
+    n_opts_bench   = OPTION_CARDINALITY(struct replay_specific);
+    n_opts_dbg     = OPTION_CARDINALITY(debug_options_st);
     n_opts_storage = bench_storage_config_nopts();
-    n_opts_all = n_opts_bench + n_opts_dbg + n_opts_storage;
+    n_opts_all     = n_opts_bench + n_opts_dbg + n_opts_storage;
 
     b->options = cc_alloc(sizeof(struct option) * n_opts_all);
     ASSERT(b->options != NULL);
 
-    option_load_default((struct option *)&bench_opts, n_opts_bench);
-    option_load_default((struct option *)&debug_opts, n_opts_dbg);
+    option_load_default((struct option *) &bench_opts, n_opts_bench);
+    option_load_default((struct option *) &debug_opts, n_opts_dbg);
 
-    BENCH_OPTS(b)->benchmark = bench_opts;
-    BENCH_OPTS(b)->debug = debug_opts;
+    BENCH_OPTS(b)->benchmark          = bench_opts;
+    BENCH_OPTS(b)->debug              = debug_opts;
     bench_storage_config_init(BENCH_OPTS(b)->engine);
-
 
     if (config != NULL) {
         FILE *fp = fopen(config, "r");
@@ -91,7 +88,7 @@ benchmark_create(struct benchmark *b, const char *config)
             printf("cannot open config %s\n", config);
             exit(EX_CONFIG);
         }
-        option_load_file(fp, (struct option *)b->options, n_opts_all);
+        option_load_file(fp, (struct option *) b->options, n_opts_all);
         fclose(fp);
     }
 
@@ -102,27 +99,27 @@ benchmark_create(struct benchmark *b, const char *config)
         }
     }
 
-    char *list_start = O_STR(b, default_ttl_list);
-    char *curr = list_start;
-    char *new_pos;
+    char         *list_start   = O_STR(b, default_ttl_list);
+    char         *curr         = list_start;
+    char         *new_pos;
     delta_time_i ttl;
-    double perc;
-    int ttl_array_idx = 0;
+    double       perc;
+    int          ttl_array_idx = 0;
     while (curr != NULL) {
-        ttl = strtol(curr, &new_pos, 10);
-        curr = new_pos;
+        ttl     = strtol(curr, &new_pos, 10);
+        curr    = new_pos;
         new_pos = strchr(curr, ':');
         ASSERT(new_pos != NULL);
-        curr = new_pos + 1;
-        perc = strtod(curr, &new_pos);
-        for (int i = 0; i < (int)(perc*100); i++) {
+        curr       = new_pos + 1;
+        perc       = strtod(curr, &new_pos);
+        for (int i = 0; i < (int) (perc * 100); i++) {
             default_ttls[ttl_array_idx + i] = ttl;
         }
-        ttl_array_idx += (int)(perc*100);
+        ttl_array_idx += (int) (perc * 100);
         printf("find TTL %"PRId32 ": perc %.4lf, ", ttl, perc);
-        curr = new_pos;
+        curr    = new_pos;
         new_pos = strchr(curr, ',');
-        curr = new_pos == NULL? NULL: new_pos + 1;
+        curr    = new_pos == NULL ? NULL : new_pos + 1;
     }
     printf("\n");
 
@@ -131,11 +128,11 @@ benchmark_create(struct benchmark *b, const char *config)
         default_ttls[99] = default_ttls[98];
     }
 
-    n_thread = O_UINT(b, n_thread);
+    n_thread     = O_UINT(b, n_thread);
     time_speedup = O_UINT(b, time_speedup);
 
     if (n_thread > 1) {
-        char path[MAX_TRACE_PATH_LEN];
+        char     path[MAX_TRACE_PATH_LEN];
         for (int i = 0; i < n_thread; i++) {
             sprintf(path, "%s.%d", O_STR(b, trace_path), i);
             readers[i] = open_trace(path, default_ttls);
@@ -188,7 +185,6 @@ trace_replay_run(void)
     run_op(e);
     e->op = op_get;
     run_op(e);
-
 
     int32_t last_print = 0;
     while (read_trace(reader) == 0) {
@@ -320,8 +316,8 @@ _trace_replay_thread(void *arg)
             e->op = op_set;
         }
 
-        if (e->op != op_get)
-            e->op = op_get;
+        // if (e->op != op_get)
+        //     e->op = op_get;
 
         status = run_op(e);
         local_op_cnt[e->op] += 1;
@@ -364,7 +360,8 @@ trace_replay_run_mt(struct benchmark *b)
 
     for (int i = 0; i < n_thread; i++) {
         readers[i]->update_time = false;
-        pthread_create(&pids[i], NULL, _trace_replay_thread, (void*) (unsigned long) i);
+        pthread_create(&pids[i], NULL, _trace_replay_thread,
+            (void *) (unsigned long) i);
     }
 
     /* wait for eval thread ready */

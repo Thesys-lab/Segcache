@@ -153,6 +153,7 @@ bench_storage_add(struct benchmark_entry *e)
     it = item_get(&key, NULL);
     if (it != NULL){
         item_release(it);
+
         return CC_OK;
     }
 

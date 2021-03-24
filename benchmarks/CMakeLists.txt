@@ -22,6 +22,7 @@ set(MODULES_SEG
 #        bench_storage_LHD
 #        LHD)
 
+
 set(LIBS
         time
         ccommon-static
@@ -35,6 +36,7 @@ target_link_libraries(bench_cuckoo ${MODULES_CUCKOO} ${LIBS})
 
 add_executable(bench_seg ${SOURCE})
 target_link_libraries(bench_seg ${MODULES_SEG} ${LIBS})
+
 
 set(SOURCE_TRACE_REPLAY trace_replay/trace_replay.c trace_replay/reader.c shared.c)
 add_executable(trace_replay_slab ${SOURCE_TRACE_REPLAY})
