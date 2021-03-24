@@ -159,8 +159,12 @@ item_size(uint32_t klen, uint32_t vlen, uint32_t olen)
 {
     size_t sz = ITEM_HDR_SIZE + klen + olen;
 
+#ifdef SUPPORT_INCR
     /* value is at least 8 bytes so that incr/decr does not need to  copied */
     sz += vlen >= sizeof(uint64_t) ? vlen : sizeof(uint64_t);
+#else
+    sz += vlen;
+#endif
 
     /* we need to make sure memory is aligned at 8-byte boundary */
     return item_size_roundup(sz);
@@ -179,7 +183,12 @@ item_ntotal(const struct item *it)
     }
 
     size_t sz = ITEM_HDR_SIZE + it->klen + it->olen;
+
+#ifdef SUPPORT_INCR
     sz += it->vlen >= sizeof(uint64_t) ? it->vlen : sizeof(uint64_t);
+#else
+    sz += it->vlen;
+#endif
 
     /* we need to make sure memory is aligned at 8-byte boundary */
     return item_size_roundup(sz);

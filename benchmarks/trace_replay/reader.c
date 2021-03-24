@@ -169,18 +169,12 @@ read_trace(struct reader *reader)
 
     uint32_t op = (op_ttl >> 24u) & (0x00000100 - 1);
     uint32_t ttl = op_ttl & (0x01000000 - 1);
-    if (ttl == 0) {
+//    if (ttl == 0) {
         ttl = reader->default_ttls[reader->default_ttl_idx];
         reader->default_ttl_idx = (reader->default_ttl_idx + 1) % 100;
-    }
+//    }
 
-    if (ttl == 0) {
-        printf("TTL 0, index %d\n", reader->default_ttl_idx);
-        for (int i=0; i<100; i++){
-            printf("%d\n", reader->default_ttls[i]);
-        }
-        exit(1);
-    }
+    ASSERT(ttl != 0);
 
     if (op <= 0 || op >= 12) {
         printf("unknown op %d\n", op);
