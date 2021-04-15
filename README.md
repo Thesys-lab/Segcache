@@ -17,7 +17,7 @@ This repo contains the code of Segcache described in the following paper:
 
 ### Build
 ```sh
-git clone https://github.com/twitter/pelikan.git
+git clone https://github.com/Thesys-lab/Segcache.git
 mkdir _build && cd _build
 cmake ..
 make -j
