@@ -196,13 +196,12 @@ trace_replay_run(void)
             duration_snapshot(&d1, &d);
             duration_stop(&d1);
             double ds = duration_sec(&d1);
-            printf("LHD %.2lf hour, run %.2lf sec, throughput %.2lf MQPS, %ld requests, miss ratio %.4lf\n",
-                   (double) time_proc_sec()/3600.0, ds, (double) n_req / 1000000.0 / ds, n_req, (double) n_miss / (double) n_get_req);
+            printf("LHD %.2lf hour, run %.2lf sec, throughput %.2lf MQPS, %ld %ld requests, miss ratio %.4lf\n",
+                   (double) time_proc_sec()/3600.0, ds, (double) n_req / 1000000.0 / ds, n_req, n_get_req, (double) n_miss / (double) n_get_req);
         }
 
         status = run_op(e);
         op_cnt[e->op] += 1;
-        n_req += 1;
 
         if (e->op == op_get) {
             n_get_req += 1;

@@ -192,7 +192,6 @@ read_trace(struct reader *reader)
     }
 
     if (reader->nottl) {
-        printf("nottl\n");
         ttl = 2000000;
     }
 
