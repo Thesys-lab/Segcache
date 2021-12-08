@@ -42,6 +42,7 @@ static delta_time_i         default_ttls[100];
     ACTION(n_thread,        OPTION_TYPE_UINT,   1,              "the number of threads")                    \
     ACTION(debug_logging,   OPTION_TYPE_BOOL,   true,           "turn on debug logging")                    \
     ACTION(time_speedup,    OPTION_TYPE_UINT,   1,              "speed up the time in replay")              \
+    ACTION(nottl,           OPTION_TYPE_UINT,   0,              "whether use trace TTL")                    \
 
 
 struct replay_specific {
@@ -130,12 +131,13 @@ benchmark_create(struct benchmark *b, const char *config)
 
     n_thread     = O_UINT(b, n_thread);
     time_speedup = O_UINT(b, time_speedup);
+    int nottl    = O_UINT(b, nottl);
 
     if (n_thread > 1) {
         char     path[MAX_TRACE_PATH_LEN];
         for (int i = 0; i < n_thread; i++) {
             sprintf(path, "%s.%d", O_STR(b, trace_path), i);
-            readers[i] = open_trace(path, default_ttls);
+            readers[i] = open_trace(path, default_ttls, nottl);
             readers[i]->reader_id = i;
             if (readers[i] == NULL) {
                 printf("failed to open trace %s\n", path);
@@ -143,7 +145,7 @@ benchmark_create(struct benchmark *b, const char *config)
             }
         }
     } else {
-        readers[0] = open_trace(O_STR(b, trace_path), default_ttls);
+        readers[0] = open_trace(O_STR(b, trace_path), default_ttls, nottl);
         readers[0]->reader_id = 0;
         if (readers[0] == NULL) {
             printf("failed to open trace %s\n", O_STR(b, trace_path));
@@ -171,7 +173,7 @@ trace_replay_run(void)
     reader->update_time = false;
     struct benchmark_entry *e = reader->e;
 
-    struct duration d;
+    struct duration d, d1;
     duration_start(&d);
 
     rstatus_i status;
@@ -189,29 +191,28 @@ trace_replay_run(void)
     int32_t last_print = 0;
     while (read_trace(reader) == 0) {
         proc_sec = reader->curr_ts * time_speedup;
-        if (time_proc_sec() % 3600 == 0 && time_proc_sec() != last_print) {
+        if (time_proc_sec() % 21600 == 0 && time_proc_sec() != last_print) {
             last_print = time_proc_sec();
-//            printf("curr sec %d\n", time_proc_sec());
+            duration_snapshot(&d1, &d);
+            duration_stop(&d1);
+            double ds = duration_sec(&d1);
+            printf("LHD %.2lf hour, run %.2lf sec, throughput %.2lf MQPS, %ld requests, miss ratio %.4lf\n",
+                   (double) time_proc_sec()/3600.0, ds, (double) n_req / 1000000.0 / ds, n_req, (double) n_miss / (double) n_get_req);
         }
-        if (e->op == op_incr || e->op == op_decr) {
-            e->op = op_get;
-        } else if (e->op == op_add || e->op == op_replace || e->op == op_cas) {
-            ;
-        }
+
         status = run_op(e);
         op_cnt[e->op] += 1;
+        n_req += 1;
 
         if (e->op == op_get) {
             n_get_req += 1;
 
             if (status == CC_EEMPTY) {
                 n_miss += 1;
-                if (e->val_len != 0) {
-                    op_cnt[op_set] += 1;
-                    e->op = op_set;
-                    run_op(e);
-                    n_req += 1;
-                }
+                op_cnt[op_set] += 1;
+                e->op = op_set;
+                run_op(e);
+                n_req += 1;
             }
         }
 

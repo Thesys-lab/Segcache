@@ -15,6 +15,8 @@ struct benchmark_entry;
 
 struct reader {
     char *mmap;
+    bool nottl;
+
     size_t offset;
     size_t file_size;
     char trace_path[MAX_TRACE_PATH_LEN];
@@ -31,7 +33,7 @@ struct reader {
 
 
 struct reader *
-open_trace(const char *trace_path, const int32_t *default_ttls);
+open_trace(const char *trace_path, const int32_t *default_ttls, const bool nottl);
 
 
 /*

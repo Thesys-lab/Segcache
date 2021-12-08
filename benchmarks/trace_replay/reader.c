@@ -46,7 +46,7 @@ static char val_array[MAX_VAL_LEN] = {'A'};
  * @return
  */
 struct reader *
-open_trace(const char *trace_path, const int32_t * default_ttls)
+open_trace(const char *trace_path, const int32_t * default_ttls, const bool nottl)
 {
     int fd;
     struct stat st;
@@ -60,6 +60,7 @@ open_trace(const char *trace_path, const int32_t * default_ttls)
     reader->default_ttls = default_ttls;
     reader->default_ttl_idx = 0;
     strcpy(reader->trace_path, trace_path);
+    reader->nottl = nottl;
 
     /* get trace file info */
     if ((fd = open(trace_path, O_RDONLY)) < 0) {
@@ -93,7 +94,7 @@ open_trace(const char *trace_path, const int32_t * default_ttls)
     reader->start_ts = ts;
 
     /* size of one request, hard-coded for the trace type */
-    size_t item_size = 20;
+    size_t item_size = 34;
 
     if (reader->file_size % item_size != 0) {
         log_warn("trace file size %zu is not multiple of item size %zu\n",
@@ -135,50 +136,64 @@ open_trace(const char *trace_path, const int32_t * default_ttls)
 int
 read_trace(struct reader *reader)
 {
-    size_t offset = __atomic_fetch_add(&reader->offset, 20, __ATOMIC_RELAXED);
+    size_t offset = __atomic_fetch_add(&reader->offset, 34, __ATOMIC_RELAXED);
     if (offset >= reader->file_size) {
         return 1;
     }
 
     char *mmap = reader->mmap + offset;
+
     uint32_t ts = *(uint32_t *)mmap - reader->start_ts + 1;
-    reader->curr_ts = ts;
+    reader->curr_ts = (int32_t) ts;
     if (reader->update_time) {
         __atomic_store_n(&proc_sec, reader->curr_ts, __ATOMIC_RELAXED);
     }
-    mmap += 4;
 
-    uint64_t key = *(uint64_t *)mmap;
-    mmap += 8;
-    uint32_t kv_len = *(uint32_t *)mmap;
-    mmap += 4;
-    uint32_t op_ttl = *(uint32_t *)mmap;
+    uint64_t key = *(uint64_t *)(mmap + 4);
+    uint8_t key_len = *(uint16_t *)(mmap + 12);
+    if (key_len < 8)
+        key_len = 8;
+    uint32_t val_len = *(uint32_t *)(mmap + 14);
 
-    uint32_t key_len = (kv_len >> 22) & (0x00000400 - 1);
-    uint32_t val_len = kv_len & (0x00400000 - 1);
-
-    if (key_len == 0) {
-        printf("trace contains request of key size 0, object id %" PRIu64 "\n",
-                key);
+    op_e op = op_invalid;
+    if (val_len > 1048000) {
         return read_trace(reader);
     }
 
-    if (key_len < 8) {
-        key_len = 8; 
+    switch (*(uint16_t *)(mmap + 18)) {
+        case 1:
+        case 2:
+        case 4:
+        case 5:
+        case 7:
+        case 8:
+        case 10:
+        case 11:
+            op = op_get;
+            break;
+        case 3:
+        case 6:
+            op = op_set;
+            break;
+        case 9:
+            op = op_delete;
+            break;
+        default:
+            printf("unsupported request op %d\n", (int)(*(uint16_t *)(mmap + 18)));
+            op = op_invalid;
+            break;
     }
 
-    uint32_t op = (op_ttl >> 24u) & (0x00000100 - 1);
-    uint32_t ttl = op_ttl & (0x01000000 - 1);
-//    if (ttl == 0) {
-        ttl = reader->default_ttls[reader->default_ttl_idx];
-        reader->default_ttl_idx = (reader->default_ttl_idx + 1) % 100;
-//    }
+//    uint16_t ns = *(uint16_t *) (mmap + 20);
+    uint32_t ttl = *(int32_t *)(mmap + 22);
 
-    ASSERT(ttl != 0);
+    if (ttl == 0) {
+        ttl = 86400;
+    }
 
-    if (op <= 0 || op >= 12) {
-        printf("unknown op %d\n", op);
-        op = 1;
+    if (reader->nottl) {
+        printf("nottl\n");
+        ttl = 2000000;
     }
 
     *(uint64_t *) (reader->e->key) = key + reader->reader_id * 10000000000;
@@ -188,9 +203,9 @@ read_trace(struct reader *reader)
 
     reader->e->key_len = key_len;
     reader->e->val_len = val_len;
-    reader->e->op = op - 1;
-    reader->e->ttl = ttl;
-    reader->e->expire_at = ts + ttl;
+    reader->e->op = op;
+    reader->e->ttl = (int) ttl;
+    reader->e->expire_at = (int) (ts + ttl);
 
     return 0;
 }

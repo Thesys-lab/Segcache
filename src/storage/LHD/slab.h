@@ -24,7 +24,7 @@
 #define SLAB_USE_FREEQ  true
 #define SLAB_PROFILE    NULL
 #define SLAB_USE_CAS    true
-#define ITEM_SIZE_MIN   60      /* 40 bytes item overhead */
+#define ITEM_SIZE_MIN   64      /* 40 bytes item overhead */
 #define ITEM_SIZE_MAX   (SLAB_SIZE - SLAB_HDR_SIZE)
 #define ITEM_FACTOR     1.25
 #define ITEM_MAX_TTL    (30 * 24 * 60 * 60) /* 30 days */
@@ -206,4 +206,3 @@ slab_to_item(struct slab *slab, uint32_t idx, size_t size);
 rstatus_i _slab_get(uint8_t id);
 
 void rebalance_slab(void);
-void age_coarsening(void);

@@ -83,14 +83,14 @@ struct slabclass {
 
     uint64_t        n_eviction;
     uint64_t        n_req;
-    uint64_t        ev_age;
+    uint64_t        ev_age_sum;
 
-#ifdef USE_LHD
-    uint32_t        n_hit_age[MAX_AGE];
-    uint32_t        n_evict_age[MAX_AGE];
-    double          LHD[MAX_AGE];
-    double          ev_rank;
-#endif
+//#ifdef USE_LHD
+//    uint32_t        n_hit_age[MAX_AGE];
+//    uint32_t        n_evict_age[MAX_AGE];
+//    double          LHD[MAX_AGE];
+//    double          ev_rank;
+//#endif
 };
 
 /*

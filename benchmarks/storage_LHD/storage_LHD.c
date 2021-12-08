@@ -13,15 +13,15 @@ static slab_metrics_st metrics = { SLAB_METRIC(METRIC_INIT) };
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-void lockmylock() {
-    int status = pthread_mutex_lock(&lock);
-    ASSERT(status == 0);
-}
-
-void unlockmylock() {
-    int status = pthread_mutex_unlock(&lock);
-    ASSERT(status == 0);
-}
+//void lockmylock(void) {
+//    int status = pthread_mutex_lock(&lock);
+//    ASSERT(status == 0);
+//}
+//
+//void unlockmylock(void) {
+//    int status = pthread_mutex_unlock(&lock);
+//    ASSERT(status == 0);
+//}
 
 
 unsigned
@@ -92,7 +92,7 @@ bench_storage_get(struct benchmark_entry *e)
 #endif
 
         int refcnt = __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
-//        ASSERT(refcnt == 1);
+        ASSERT(refcnt == 1);
     }
 
 //    unlock_bucket(e->key, e->key_len);
@@ -118,7 +118,7 @@ bench_storage_delete(struct benchmark_entry *e)
     struct item *it = NULL;
     it = item_get(&key);
     if (it != NULL) {
-        int refcnt = __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
+        __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
 //        lock_slabclass(it->id);
         status = item_delete(&key);
 //        unlock_slabclass(it->id);
@@ -174,7 +174,7 @@ bench_storage_add(struct benchmark_entry *e)
 
     it = item_get(&key);
     if (it != NULL) {
-        int refcnt = __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
+        __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
         return CC_OK;
     }
 
@@ -201,7 +201,7 @@ bench_storage_replace(struct benchmark_entry *e)
     if (it == NULL) {
         return CC_OK;
     }
-    int refcnt = __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
+    __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
 
     struct bstring val = {.data = e->val, .len = e->val_len};
     item_rstatus_e status =
@@ -227,7 +227,7 @@ bench_storage_cas(struct benchmark_entry *e)
     if (it == NULL) {
         return CC_ERROR;
     }
-    int refcnt = __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
+    __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
 
     uint64_t cas = item_get_cas(it);
 
@@ -262,7 +262,7 @@ bench_storage_incr(struct benchmark_entry *e)
     status = item_atou64(&vint, it);
     if (status != ITEM_OK) {
 
-        int refcnt = __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
+        __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
         return status;
     }
 
@@ -271,7 +271,7 @@ bench_storage_incr(struct benchmark_entry *e)
     if (item_slabid(it->klen, nval.len, it->olen) == it->id) {
         item_update(it, &nval);
 
-        int refcnt = __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
+        __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
         return ITEM_OK;
     }
 
@@ -280,7 +280,7 @@ bench_storage_incr(struct benchmark_entry *e)
         item_insert(it, &key);
     }
 
-    int refcnt = __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
+    __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
     return CC_OK;
 }
 

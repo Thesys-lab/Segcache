@@ -106,7 +106,7 @@ benchmark_run_operation(
 /* this is not placed in shared.c because in throughput mode, we want to avoid
  * the op count and latency measurement
  */
-static inline rstatus_i
+static rstatus_i
 run_op(struct benchmark_entry *e)
 {
     log_verb("** start a new request ts % " PRId32 " key %.*s, op %s, ttl "

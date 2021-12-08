@@ -174,12 +174,11 @@ _slab_put_item_into_freeq(struct item *it, uint8_t id)
 
     ASSERT(it->refcount == 0);
     while (it->refcount > 0) {
-        ;
+        printf("wait for item refcount\n");
+
     }
 
-//    lock_slabclass(id);
-//    pthread_mutex_lock(&temp_lock);
-    ASSERT(pthread_mutex_trylock(&(p->lock)) != 0);
+//    ASSERT(pthread_mutex_trylock(&(p->lock)) != 0);
 
 
     ASSERT(id >= SLABCLASS_MIN_ID && id <= profile_last_id);
@@ -198,9 +197,6 @@ _slab_put_item_into_freeq(struct item *it, uint8_t id)
     log_verb("put free q it %p at offset %"PRIu32" with id %"PRIu8 " %d left", it,
             it->offset, it->id, p->nfree_itemq);
 
-//    unlock_slabclass(id);
-
-//    pthread_mutex_unlock(&temp_lock);
 
     PERSLAB_INCR(id, item_free);
 }
@@ -251,7 +247,7 @@ _slab_slabclass_setup(void)
 
         p->nitem = nitem;
         p->size = item_sz;
-        p->ev_age = 0;
+        p->ev_age_sum = 0;
         p->slab_list = cc_zalloc(sizeof(struct slab *)* heapinfo.max_nslab);
         p->nslabs = 0;
         p->n_eviction = 0;
@@ -259,17 +255,17 @@ _slab_slabclass_setup(void)
 //        printf("%d %d %d %d\n", id, p->nitem, p->size, p->size * p->nitem);
         ASSERT(p->size * p->nitem <= slab_size - SLAB_HDR_SIZE);
 
-#ifdef USE_LHD
-        p->ev_rank = 0;
-        for (int i = 0; i < MAX_AGE; i++) {
-            p->n_hit_age[i] = 0;
-            p->n_evict_age[i] = 0;
-        }
-
-        for (int a = 0; a < MAX_AGE; a++) {
-            p->LHD[a] = 1. * (id + 1) / (a + 1);
-        }
-#endif
+//#ifdef USE_LHD
+//        p->ev_rank = 0;
+//        for (int i = 0; i < MAX_AGE; i++) {
+//            p->n_hit_age[i] = 0;
+//            p->n_evict_age[i] = 0;
+//        }
+//
+//        for (int a = 0; a < MAX_AGE; a++) {
+//            p->LHD[a] = 1. * (id + 1) / (a + 1);
+//        }
+//#endif
         pthread_mutex_init(&(p->lock), NULL);
 //        log_info("init slab lock %d %p %p %p", id, &(p->lock), p, &slabclasses[id]);
 
@@ -712,8 +708,6 @@ _slab_evict_one(struct slab *slab)
     int slabclass_id = slab->id;
     p = &slabclasses[slabclass_id];
 
-    lock_slabclass(slabclass_id);
-
     /* remove slab from slab_list */
     for (i = 0; i < p->nslabs; i++) {
         if (p->slab_list[i] == slab) {
@@ -758,8 +752,6 @@ _slab_evict_one(struct slab *slab)
             SLIST_REMOVE(&p->free_itemq, it, item, i_sle);
         }
     }
-
-    unlock_slabclass(slabclass_id);
 
     /* unlink the slab from its class */
 //    _slab_lruq_remove(slab);
@@ -900,7 +892,6 @@ _slab_get_item_from_freeq(uint8_t id)
     p = &slabclasses[id];
 
     if (p->nfree_itemq == 0) {
-        unlock_slabclass(id);
         return NULL;
     }
 
@@ -995,9 +986,20 @@ void
 slab_put_item(struct item *it, uint8_t id)
 {
     ASSERT(!(it->in_freeq));
-    ASSERT(pthread_mutex_trylock(&slabclasses[id].lock) != 0);
+//    ASSERT(pthread_mutex_trylock(&slabclasses[id].lock) != 0);
 
     _slab_put_item_into_freeq(it, id);
+}
+
+
+void print_nslab(void) {
+    struct slabclass *p;
+    printf("n slabs: ");
+    for (int i = SLABCLASS_MIN_ID; i <= profile_last_id; i++) {
+        p = &slabclasses[i];
+        printf("%4d,", p->nslabs);
+    }
+    printf("\n");
 }
 
 void rebalance_slab(void) {
@@ -1006,21 +1008,24 @@ void rebalance_slab(void) {
     struct slabclass *p;
     double er;
 
+    return;
+
     for (int i = SLABCLASS_MIN_ID; i <= profile_last_id; i++) {
         p = &slabclasses[i];
 #ifdef USE_LHD
-        if (p->nslabs > 1 && p->n_eviction > 1 && p->ev_rank != 0) {
-            er = p->ev_rank;
+//        if (p->nslabs > 1 && p->n_eviction > 1 && p->ev_rank != 0) {
+//            er = p->ev_rank;
+        if (true) {
 #elif defined(USE_HYPERBOLIC)
         if (p->n_req > REBALANCE_INTVL/100 && p->nslabs > 1) {
 #if REBALANCE_METRIC == EVICTION_RATE
             er = (double) p->n_eviction / p->n_req;
-            p->n_req = 0;
-            p->n_eviction = 0;
+//            p->n_req = 0;
+//            p->n_eviction = 0;
 #elif REBALANCE_METRIC == EVICTION_AGE
-            er = -(double) (p->ev_age)/p->n_eviction;
-            p->ev_age = 0;
-            p->n_eviction = 0;
+            er = (double) (p->ev_age_sum)/p->n_eviction;
+//            p->ev_age_sum = 0;
+//            p->n_eviction = 0;
 #endif
 #endif
             if (max_evict_slab_class == 0) {
@@ -1038,6 +1043,7 @@ void rebalance_slab(void) {
                 min_evict = er;
                 min_evict_slab_class = i;
             }
+            p->ev_age_sum = 0;
             p->n_req = 0;
             p->n_eviction = 0;
         }
@@ -1045,7 +1051,14 @@ void rebalance_slab(void) {
 
     if (max_evict_slab_class != min_evict_slab_class &&
             max_evict > min_evict * 1.2) {
-        p = &slabclasses[min_evict_slab_class];
+#if REBALANCE_METRIC == EVICTION_RATE
+        int move_out_slab_class = min_evict_slab_class;
+        int move_in_slab_class = max_evict_slab_class;
+#elif REBALANCE_METRIC == EVICTION_AGE
+        int move_out_slab_class = max_evict_slab_class;
+        int move_in_slab_class = min_evict_slab_class;
+#endif
+        p = &slabclasses[move_out_slab_class];
         struct slab *slab = p->slab_list[0];
         if (p->nslabs > 1) {
             p->slab_list[0] = p->slab_list[--p->nslabs];
@@ -1054,87 +1067,16 @@ void rebalance_slab(void) {
             p->nslabs --;
         }
         _slab_evict_one(slab);
-        _slab_init(slab, max_evict_slab_class);
+        _slab_init(slab, move_in_slab_class);
         log_info("move slab from class %d to %d now %d %d slabs"
-                 ", eviction rate %.4lf %.4lf"
-#ifdef USE_LHD
-                 ", rank %lf %lf"
-#endif
+                 ", eviction rate (age) %.4lf %.4lf"
                 ,
-                min_evict_slab_class, max_evict_slab_class,
-                slabclasses[min_evict_slab_class].nslabs,
-                slabclasses[max_evict_slab_class].nslabs,
+                move_out_slab_class, move_in_slab_class,
+                slabclasses[move_out_slab_class].nslabs,
+                slabclasses[move_in_slab_class].nslabs,
                 min_evict, max_evict
-
-#ifdef USE_LHD
-        , slabclasses[min_evict_slab_class].ev_rank * 1000000
-        , slabclasses[max_evict_slab_class].ev_rank * 1000000
-#endif
                 );
+//        print_nslab();
     }
 }
 
-#define COMM
-#ifdef USE_LHD
-void age_coarsening() {
-    int num_obj = 0;
-    for (int i = SLABCLASS_MIN_ID; i <= profile_last_id; i++) {
-        num_obj += slabclasses[i].nitem * slabclasses[i].nslabs;
-    }
-
-    double optimalAgeCoarsening = 1. * num_obj / (AGE_COARSENING_ERROR_TOLERANCE * MAX_AGE);
-
-    // Simplify. Just do this once shortly after the trace starts and
-    // again after 25 iterations. It only matters that we are within
-    // the right order of magnitude to avoid tons of overflows.
-    if (LHD_num_reconfig == 5 || LHD_num_reconfig == 25 || LHD_num_reconfig == 50 || LHD_num_reconfig == 100) {
-        uint32_t optimalAgeCoarseningLog2 = 1;
-
-        while ((1 << optimalAgeCoarseningLog2) < optimalAgeCoarsening) {
-            optimalAgeCoarseningLog2 += 1;
-        }
-
-        int32_t delta = optimalAgeCoarseningLog2 - ageCoarseningShift;
-        ageCoarseningShift = optimalAgeCoarseningLog2;
-        log_info("agecoarsening %d", delta);
-
-        // increase weight to delay another shift for a while
-//        ewmaNumObjects *= 8;
-//        ewmaNumObjectsMass *= 8;
-
-        // compress or stretch distributions to approximate new scaling
-        // regime
-        if (delta < 0) {
-            // stretch
-            for (int slabclassid = SLABCLASS_MIN_ID; slabclassid <= profile_last_id; slabclassid++) {
-                struct slabclass *p = &slabclasses[slabclassid];
-                for (uint64_t a = MAX_AGE >> (-delta); a < MAX_AGE - 1; a++) {
-                    p->n_hit_age[MAX_AGE - 1] += p->n_hit_age[a];
-                    p->n_evict_age[MAX_AGE - 1] += p->n_evict_age[a];
-                }
-                for (uint64_t a = MAX_AGE - 2; a < MAX_AGE; a--) {
-                    p->n_hit_age[a] = p->n_hit_age[a >> (-delta)] / (1 << (-delta));
-                    p->n_evict_age[a] = p->n_evict_age[a >> (-delta)] / (1 << (-delta));
-                }
-            }
-        } else if (delta > 0) {
-            // compress
-            for (int slabclassid = SLABCLASS_MIN_ID; slabclassid <= profile_last_id; slabclassid++) {
-                struct slabclass *p = &slabclasses[slabclassid];
-                for (uint64_t a = 0; a < MAX_AGE >> delta; a++) {
-                    p->n_hit_age[a] = p->n_hit_age[a << delta];
-                    p->n_evict_age[a] = p->n_evict_age[a << delta];
-                    for (int i = 1; i < (1 << delta); i++) {
-                        p->n_hit_age[a] += p->n_hit_age[(a << delta) + i];
-                        p->n_evict_age[a] += p->n_evict_age[(a << delta) + i];
-                    }
-                }
-                for (uint64_t a = (MAX_AGE >> delta); a < MAX_AGE - 1; a++) {
-                    p->n_hit_age[a] = 0;
-                    p->n_evict_age[a] = 0;
-                }
-            }
-        }
-    }
-}
-#endif

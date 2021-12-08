@@ -8,12 +8,32 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef USE_LHD
+#include "LHD.h"
+struct LHD_class LHD_classes[NUM_LHD_CLASS];
+uint64_t LHD_num_reconfig = 0;
+uint64_t next_reconfigure_time = RECONFIGURE_INTVL;
+
+unsigned int ageCoarseningShift = 10;
+float ewmaNumObjects = 0;
+float ewmaNumObjectsMass = 0;
+bool LHD_init = false;
+
+
+
+#elif defined(USE_HYPERBOLIC)
+#include "hyperbolic.h"
+#endif
+
+uint64_t n_req = 0;
 extern delta_time_i max_ttl;
 proc_time_i flush_at = -1;
 
-extern pthread_mutex_t item_lock[1u<<16u];
+//extern pthread_mutex_t item_lock[1u<<16u];
 //struct item     tags[100000000];
-uint64_t    tag_pos = 0;
+//uint64_t    tag_pos = 0;
+
+
 
 static __thread __uint128_t g_lehmer64_state = 1;
 
@@ -23,56 +43,52 @@ static inline uint64_t prand(void) {
     return g_lehmer64_state >> 64u;
 }
 
-static uint64_t n_req = 0;
 pthread_mutex_t temp_lock = PTHREAD_MUTEX_INITIALIZER;
-
-uint64_t LHD_num_reconfig = 0;
-unsigned int ageCoarseningShift = 8;
 
 
 static struct item * rand_evict(struct slabclass *p);
 
-void lock_item(struct item *it) {
-    uint32_t lock_idx = get_hv(item_key(it), it->klen) & 0x0000ffffu;
-    struct slabclass *p = &slabclasses[it->id];
-    pthread_mutex_lock(&item_lock[lock_idx]);
-    pthread_mutex_lock(&(p->lock));
-}
+//void lock_item(struct item *it) {
+//    uint32_t lock_idx = get_hv(item_key(it), it->klen) & 0x0000ffffu;
+//    struct slabclass *p = &slabclasses[it->id];
+//    pthread_mutex_lock(&item_lock[lock_idx]);
+//    pthread_mutex_lock(&(p->lock));
+//}
+//
+//void unlock_item(struct item *it) {
+//    uint32_t lock_idx = get_hv(item_key(it), it->klen) & 0x0000ffffu;
+//    struct slabclass *p = &slabclasses[it->id];
+//    pthread_mutex_unlock(&item_lock[lock_idx]);
+//    pthread_mutex_unlock(&(p->lock));
+//}
 
-void unlock_item(struct item *it) {
-    uint32_t lock_idx = get_hv(item_key(it), it->klen) & 0x0000ffffu;
-    struct slabclass *p = &slabclasses[it->id];
-    pthread_mutex_unlock(&item_lock[lock_idx]);
-    pthread_mutex_unlock(&(p->lock));
-}
+//void lock_bucket(const char *key, uint32_t key_len) {
+//    uint32_t lock_idx = get_hv(key, key_len) & 0x0000ffffu;
+//    int status = pthread_mutex_lock(&item_lock[lock_idx]);
+//    ASSERT(status == 0);
+//}
+//
+//void unlock_bucket(const char *key, uint32_t key_len) {
+//    uint32_t lock_idx = get_hv(key, key_len) & 0x0000ffffu;
+//    int status = pthread_mutex_unlock(&item_lock[lock_idx]);
+//    ASSERT(status == 0);
+//}
 
-void lock_bucket(const char *key, uint32_t key_len) {
-    uint32_t lock_idx = get_hv(key, key_len) & 0x0000ffffu;
-    int status = pthread_mutex_lock(&item_lock[lock_idx]);
-    ASSERT(status == 0);
-}
-
-void unlock_bucket(const char *key, uint32_t key_len) {
-    uint32_t lock_idx = get_hv(key, key_len) & 0x0000ffffu;
-    int status = pthread_mutex_unlock(&item_lock[lock_idx]);
-    ASSERT(status == 0);
-}
-
-void lock_slabclass(int id) {
-    ASSERT(id >= SLABCLASS_MIN_ID && id <= profile_last_id);
-//    log_info("lock slabclass id %d", id);
-    int status = pthread_mutex_lock(&(slabclasses[id].lock));
-    ASSERT(status == 0);
-    ASSERT(pthread_mutex_trylock(&slabclasses[id].lock) != 0);
-}
-
-void unlock_slabclass(int id) {
-    ASSERT(id >= SLABCLASS_MIN_ID && id <= profile_last_id);
-//    log_info("unlock slabclass id %d", id);
-    struct slabclass *p = &slabclasses[id];
-    int status = pthread_mutex_unlock(&(p->lock));
-    ASSERT(status == 0);
-}
+//void lock_slabclass(int id) {
+//    ASSERT(id >= SLABCLASS_MIN_ID && id <= profile_last_id);
+////    log_info("lock slabclass id %d", id);
+//    int status = pthread_mutex_lock(&(slabclasses[id].lock));
+//    ASSERT(status == 0);
+//    ASSERT(pthread_mutex_trylock(&slabclasses[id].lock) != 0);
+//}
+//
+//void unlock_slabclass(int id) {
+//    ASSERT(id >= SLABCLASS_MIN_ID && id <= profile_last_id);
+////    log_info("unlock slabclass id %d", id);
+//    struct slabclass *p = &slabclasses[id];
+//    int status = pthread_mutex_unlock(&(p->lock));
+//    ASSERT(status == 0);
+//}
 
 
 static void
@@ -113,9 +129,11 @@ item_hdr_init(struct item *it, uint32_t offset, uint8_t id)
     it->id = id;
     it->is_linked = it->in_freeq = it->is_raligned = 0;
     it->locked = 0;
-    it->tag_idx = __atomic_fetch_add(&tag_pos, 1, __ATOMIC_RELAXED);
+//    it->tag_idx = __atomic_fetch_add(&tag_pos, 1, __ATOMIC_RELAXED);
 #ifdef USE_LHD
-    it->v_create_time = 0;
+    it->access_time = 0;
+    it->last_age = 0;
+    it->last_last_age = MAX_AGE;
 #elif defined(USE_HYPERBOLIC)
     it->freq = 0;
 #endif
@@ -149,9 +167,9 @@ _item_reset(struct item *it)
 #endif
 
 #ifdef USE_LHD
-    it->v_create_time = 0;
+    it->access_time = 0;
 #ifdef USE_TAG
-    tags[it->tag_idx].v_create_time = 0;
+    tags[it->tag_idx].access_time = 0;
 #endif
 #elif defined(USE_HYPERBOLIC)
     it->freq = 0;
@@ -186,11 +204,7 @@ _item_alloc(struct item **it_p, uint8_t klen, uint32_t vlen, uint8_t olen)
         _slab_get(id);
     }
 
-//    lock_slabclass(id);
-
     it = slab_get_item(id);
-
-//    unlock_slabclass(id);
 
     *it_p = it;
     rstatus_i status;
@@ -212,7 +226,7 @@ _item_alloc(struct item **it_p, uint8_t klen, uint32_t vlen, uint8_t olen)
     } else {
         it = rand_evict(p);
         if (it != NULL) {
-            ASSERT(it->locked == 1);
+//            ASSERT(it->locked == 1);
         } else {
             it = slab_get_item(id);
             ASSERT(it != NULL);
@@ -244,8 +258,6 @@ _item_dealloc(struct item **it_p)
 {
     uint8_t id = (*it_p)->id;
 
-//    lock_slabclass(id);
-
     DECR(slab_metrics, item_curr);
     INCR(slab_metrics, item_dealloc);
     PERSLAB_DECR(id, item_curr);
@@ -253,8 +265,6 @@ _item_dealloc(struct item **it_p)
     slab_put_item(*it_p, id);
     cc_itt_free(slab_free, *it_p);
     *it_p = NULL;
-
-//    unlock_slabclass(id);
 }
 
 /*
@@ -307,13 +317,9 @@ item_insert(struct item *it, const struct bstring *key)
     ASSERT(it->in_freeq == 0);
     ASSERT(it->refcount == 1);
 
-//    lock_bucket(key->data, key->len);
-
     item_delete(key);
 
     _item_link(it, false);
-
-//    unlock_bucket(key->data, key->len);
 
     log_verb("insert it %p of id %"PRIu8" for key %.*s", it, it->id, key->len,
         key->data);
@@ -347,6 +353,7 @@ _item_unlink(struct item *it)
     PERSLAB_DECR_N(it->id, item_val_byte, it->vlen);
 }
 
+
 /**
  * Return an item if it hasn't been marked as expired, lazily expiring
  * item as-and-when needed
@@ -357,66 +364,44 @@ item_get(const struct bstring *key)
     struct item *it;
     struct slabclass *p;
 
+    if (!LHD_init) {
+        init_lhd_class();
+        LHD_init = true;
+    }
+
     uint64_t local_n = __atomic_fetch_add(&n_req, 1, __ATOMIC_RELAXED);
     if (local_n && local_n % REBALANCE_INTVL == 0) {
         rebalance_slab();
     }
 
-#ifdef USE_LHD
-    if (local_n && local_n % RECOMPUTE_INTVL == 0) {
-        LHD_num_reconfig += 1;
-#ifdef USE_AGE_COARSENING
-        age_coarsening();
-#endif
-        for (int i = SLABCLASS_MIN_ID; i <= profile_last_id; i++) {
-            p = &slabclasses[i];
-            uint64_t totalEvents = p->n_hit_age[MAX_AGE-1] + p->n_evict_age[MAX_AGE-1];
-            uint64_t totalHits = p->n_hit_age[MAX_AGE-1];
-            uint64_t lifetimeUnconditioned = totalEvents;
-
-            for (int64_t a = MAX_AGE - 2; a >= 0; a--) {
-                totalHits += p->n_hit_age[a];
-                totalEvents += p->n_hit_age[a] + p->n_evict_age[a];
-                lifetimeUnconditioned += totalEvents;
-
-                if (totalEvents > 1e-5) {
-                    p->LHD[a] = (double) totalHits / lifetimeUnconditioned;
-                } else {
-                    p->LHD[a] = 0.;
-                }
-            }
-        }
-    }
-#endif
-
-
-//    lock_bucket(key->data, key->len);
 
     it = hashtable_get(key->data, key->len, hash_table);
     if (it == NULL) {
-        unlock_bucket(key->data, key->len);
         log_verb("get it '%.*s' not found", key->len, key->data);
         return NULL;
     }
 
-    /* TODO(jason): it is possible that the thread is stuck here while other threads
-     * have evicted the slab */
     __atomic_fetch_add(&it->refcount, 1, __ATOMIC_RELAXED);
-    struct slab *slab = item_to_slab(it);
-    p = &slabclasses[slab->id];
+//    struct slab *slab = item_to_slab(it);
+//    p = &slabclasses[slab->id];
 
 #ifdef USE_LHD
-//    uint64_t age = local_n / AGE_GRANULARITY;
-    uint64_t age = ((uint64_t) (local_n - it->v_create_time)) >> ageCoarseningShift;
-    age = age > MAX_AGE ? MAX_AGE - 1 : age;
-    __atomic_fetch_add(&p->n_hit_age[age], 1, __ATOMIC_RELAXED);
+    uint64_t age = lhd_age(it);
+    int class_id = lhd_class_id(it);
+    LHD_classes[class_id].hits[age] += 1;
+
+    it->last_last_age = it->last_age;
+    it->last_age = age;
+    it->access_time = n_req;
+
+    if (n_req > next_reconfigure_time) {
+        lhd_reconfigure();
+        next_reconfigure_time += RECONFIGURE_INTVL;
+    }
+
 #elif defined(USE_HYPERBOLIC)
     __atomic_fetch_add(&it->freq, 1, __ATOMIC_RELAXED);
-#ifdef USE_TAG
-    tags[it->tag_idx].freq += 1;
 #endif
-#endif
-    __atomic_fetch_add(&p->n_req, 1, __ATOMIC_RELAXED);
 
     log_verb("get it key %.*s val %.*s", key->len, key->data, it->vlen,
             item_data(it));
@@ -428,11 +413,9 @@ item_get(const struct bstring *key)
 
         _item_delete(&it);
 
-        unlock_bucket(key->data, key->len);
         return NULL;
     }
 
-//    unlock_bucket(key->data, key->len);
 
     log_verb("get it %p of id %"PRIu8, it, it->id);
 
@@ -447,20 +430,12 @@ _item_define(struct item *it, const struct bstring *key, const struct bstring
     proc_time_i expire_cap = time_delta2proc_sec(max_ttl);
 
     it->create_at = time_proc_sec();
-#ifdef USE_TAG
-    tags[it->tag_idx].create_at = time_proc_sec();
-#endif
-#ifdef USE_LHD
-    it->v_create_time = __atomic_load_n(&n_req, __ATOMIC_RELAXED);
-#ifdef USE_TAG
-    tags[it->tag_idx].v_create_time = it->v_create_time;
-#endif
-#endif
-//    tags[it->tag_idx].expire_at = expire_at < expire_cap ? expire_at : expire_cap;
-//    tags[it->tag_idx].klen = key->len;
-//    tags[it->tag_idx].olen = olen;
-//    tags[it->tag_idx].vlen = (val == NULL) ? 0 : val->len;
 
+#ifdef USE_LHD
+    it->access_time = __atomic_fetch_add(&n_req, 1, __ATOMIC_RELAXED);
+    it->last_age = 0;
+    it->last_last_age = MAX_AGE;
+#endif
     it->expire_at = expire_at < expire_cap ? expire_at : expire_cap;
     item_set_cas(it);
     it->olen = olen;
@@ -521,89 +496,6 @@ item_backfill(struct item *it, const struct bstring *val)
             it, val->len, it->vlen);
 }
 
-//item_rstatus_e
-//item_annex(struct item *oit, const struct bstring *key, const struct bstring
-//        *val, bool append)
-//{
-//    item_rstatus_e status = ITEM_OK;
-//    struct item *nit = NULL;
-//    uint8_t id;
-//    uint32_t ntotal = oit->vlen + val->len;
-//
-//    id = item_slabid(oit->klen, ntotal, oit->olen);
-//    if (id == SLABCLASS_INVALID_ID) {
-//        log_info("client error: annex operation results in oversized item with"
-//                   "key size %"PRIu8" old value size %"PRIu32" and new value "
-//                   "size %"PRIu32, oit->klen, oit->vlen, ntotal);
-//
-//        return ITEM_EOVERSIZED;
-//    }
-//
-//    if (append) {
-//        /* if it is large enough to hold the extra data and left-aligned,
-//         * which is the default behavior, we copy the delta to the end of
-//         * the existing data. Otherwise, allocate a new item and store the
-//         * payload left-aligned.
-//         */
-//        if (id == oit->id && !(oit->is_raligned)) {
-//            cc_memcpy(item_data(oit) + oit->vlen, val->data, val->len);
-//            oit->vlen = ntotal;
-//            INCR_N(slab_metrics, item_keyval_byte, val->len);
-//            INCR_N(slab_metrics, item_val_byte, val->len);
-//            item_set_cas(oit);
-//        } else {
-//            status = _item_alloc(&nit, oit->klen, ntotal, oit->olen);
-//            if (status != ITEM_OK) {
-//                log_debug("annex failed due to failure to allocate new item");
-//                return status;
-//            }
-//            _copy_key_item(nit, oit);
-//            nit->expire_at = oit->expire_at;
-//            nit->create_at = time_proc_sec();
-//            item_set_cas(nit);
-//            /* value is left-aligned */
-//            cc_memcpy(item_data(nit), item_data(oit), oit->vlen);
-//            cc_memcpy(item_data(nit) + oit->vlen, val->data, val->len);
-//            nit->vlen = ntotal;
-//            item_insert(nit, key);
-//        }
-//    } else {
-//        /* if oit is large enough to hold the extra data and is already
-//         * right-aligned, we copy the delta to the front of the existing
-//         * data. Otherwise, allocate a new item and store the payload
-//         * right-aligned, assuming more prepends will happen in the future.
-//         */
-//        if (id == oit->id && oit->is_raligned) {
-//            cc_memcpy(item_data(oit) - val->len, val->data, val->len);
-//            oit->vlen = ntotal;
-//            INCR_N(slab_metrics, item_keyval_byte, val->len);
-//            INCR_N(slab_metrics, item_val_byte, val->len);
-//            item_set_cas(oit);
-//        } else {
-//            status = _item_alloc(&nit, oit->klen, ntotal, oit->olen);
-//            if (status != ITEM_OK) {
-//                log_debug("annex failed due to failure to allocate new item");
-//                return status;
-//            }
-//            _copy_key_item(nit, oit);
-//            nit->expire_at = oit->expire_at;
-//            nit->create_at = time_proc_sec();
-//            item_set_cas(nit);
-//            /* value is right-aligned */
-//            nit->is_raligned = 1;
-//            cc_memcpy(item_data(nit) - ntotal, val->data, val->len);
-//            cc_memcpy(item_data(nit) - oit->vlen, item_data(oit), oit->vlen);
-//            nit->vlen = ntotal;
-//            item_insert(nit, key);
-//        }
-//    }
-//
-//    log_verb("annex to it %p of id %"PRIu8", new it at %p", oit, oit->id,
-//            nit ? oit : nit);
-//
-//    return status;
-//}
-
 void
 item_update(struct item *it, const struct bstring *val)
 {
@@ -625,12 +517,10 @@ _item_delete(struct item **it)
     log_verb("delete it %p of id %"PRIu8, *it, (*it)->id);
 
     int slabclass_id = (*it)->id;
-    lock_slabclass(slabclass_id);
 
     _item_unlink(*it);
     _item_dealloc(it);
 
-    unlock_slabclass(slabclass_id);
 }
 
 bool
@@ -638,15 +528,12 @@ item_delete(const struct bstring *key)
 {
     struct item *it;
 
-    lock_bucket(key->data, key->len);
     it = hashtable_get(key->data, key->len, hash_table);
     if (it != NULL) {
         _item_delete(&it);
 
-        unlock_bucket(key->data, key->len);
         return true;
     } else {
-        unlock_bucket(key->data, key->len);
         return false;
     }
 }
@@ -661,19 +548,12 @@ item_flush(void)
 
 
 
-static double cal_item_score(struct item *it) {
+static float cal_item_score(struct item *it) {
 #ifdef USE_LHD
-//    if (n_req < RECOMPUTE_INTVL) {
-//        return 0;
-//    }
+    return lhd_get_hit_density(it);
 
-//    uint64_t age = (n_req - it->v_create_time) / AGE_GRANULARITY;
-    uint64_t age = (n_req - it->v_create_time) >> ageCoarseningShift;
-    age = age > MAX_AGE ? MAX_AGE - 1 : age;
-    struct slabclass *p = &slabclasses[item_to_slab(it)->id];
-    return -p->LHD[age]/item_size(it);
 #elif defined(USE_HYPERBOLIC)
-    return -(double) (it->freq)/(time_proc_sec() - it->create_at);
+    return cal_hyperbolic_score(it);
 #else
 #error unknown
 #endif
@@ -683,60 +563,49 @@ static double cal_item_score(struct item *it) {
 static struct item * rand_evict(struct slabclass *p) {
     struct item *it;
     struct item *best_it = NULL;
-    uint64_t best_it_ver = 0;
-    double best_score = -1, score;
+    double lowest_score, score;
 
     uint64_t slab_idx, item_idx;
-    uint8_t unlock = 0;
     int i = 0;
     static bool has_print = false;
+    if (!has_print) {
+#if defined(USE_RANDOM_EXPIRE) && USE_RANDOM_EXPIRE == 1
+        printf("random sampling for expiration turned on\n");
+#else
+        printf("random sampling expiration off\n");
+#endif
+        has_print = true;
+    }
 
-start_selection:
 
     while (i < RAND_CHOOSE_N) {
         slab_idx = prand() % (p->nslabs);
         item_idx = prand() % (p->nitem);
         it = slab_to_item(p->slab_list[slab_idx], item_idx, p->size);
-        if (it->in_freeq || it->is_linked == 0 ||
-                __atomic_load_n(&it->locked, __ATOMIC_ACQUIRE) == 1 ||
-                __atomic_load_n(&it->refcount, __ATOMIC_ACQUIRE) > 0) {
+        if (it->in_freeq || it->is_linked == 0) {
+            i += 1;
+//            printf("i %d %d %d %d %d\n", i, it->in_freeq, it->is_linked == 0,
+//                                    __atomic_load_n(&it->locked, __ATOMIC_ACQUIRE) == 1,
+//                                    __atomic_load_n(&it->refcount, __ATOMIC_ACQUIRE) > 0);
             continue;
         }
 #if defined(USE_RANDOM_EXPIRE) && USE_RANDOM_EXPIRE == 1
-        if (!has_print) {
-            printf("random sampling for expiration turned on\n");
-            has_print = true;
-        }
         if (_item_expired(it)) {
 #if defined(USE_LHD)
-            uint64_t age = (n_req - it->v_create_time) >> ageCoarseningShift;
-            age = age > MAX_AGE ? MAX_AGE - 1 : age;
-            __atomic_fetch_add(&p->n_evict_age[age], 1, __ATOMIC_RELAXED);
+            uint64_t age = lhd_age(it);
+            int class_id = lhd_class_id(it);
+            LHD_classes[class_id].evictions[age] += 1;
 #endif
-
             _item_delete(&it);
             i += 1;
             continue;
         }
-#else
-        if (!has_print) {
-            printf("random sampling expiration off\n");
-            has_print = true;
-        }
 #endif
 
-        if (best_it == NULL) {
+        score = cal_item_score(it);
+        if (best_it == NULL || score < lowest_score) {
             best_it = it;
-            best_score = cal_item_score(it);
-            best_it_ver = item_get_cas(it);
-        } else {
-            score = cal_item_score(it);
-//            printf("score %.2lf\n", score);
-            if (score > best_score) {
-                best_it = it;
-                best_score = score;
-                best_it_ver = item_get_cas(it);
-            }
+            lowest_score = score;
         }
         i ++;
     }
@@ -745,35 +614,18 @@ start_selection:
         return NULL;
     }
 
-    if (!__atomic_compare_exchange_n(&best_it->locked, &unlock, 1, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED)) {
-        goto start_selection;
-    }
-
-    if (item_get_cas(best_it) != best_it_ver) {
-        __atomic_store_n(&best_it->locked, 0, __ATOMIC_RELEASE);
-        goto start_selection;
-    }
-
     log_debug("evict %.*s", best_it->klen, item_key(best_it));
 
 #if defined(USE_LHD)
-    uint64_t local_n = __atomic_load_n(&n_req, __ATOMIC_RELAXED);
-//    uint64_t age = local_n / AGE_GRANULARITY;
-    uint64_t age = (local_n - best_it->v_create_time) >> ageCoarseningShift;
-    age = age > MAX_AGE ? MAX_AGE - 1 : age;
-    __atomic_fetch_add(&p->n_evict_age[age], 1, __ATOMIC_RELAXED);
-    p->ev_rank = p->ev_rank * 0.9 + (-best_score)*0.1;
+    uint64_t age = lhd_age(best_it);
+    int class_id = lhd_class_id(best_it);
+    LHD_classes[class_id].evictions[age] += 1;
 #endif
-
-//    int slabclass_id = p->slab_list[0]->id;
-//    lock_slabclass(slabclass_id);
 
     _item_unlink(best_it);
     item_set_cas(best_it);
 
-//    unlock_slabclass(slabclass_id);
-
-    __atomic_fetch_add(&p->ev_age, time_proc_sec() - best_it->create_at, __ATOMIC_RELAXED);
+    __atomic_fetch_add(&p->ev_age_sum, time_proc_sec() - best_it->create_at, __ATOMIC_RELAXED);
     __atomic_fetch_add(&p->n_eviction, 1, __ATOMIC_RELAXED);
 
 

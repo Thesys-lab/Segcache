@@ -1,16 +1,20 @@
 #pragma once
 
-#define RAND_CHOOSE_N 32
+#define RAND_CHOOSE_N 64
 
-#define USE_HYPERBOLIC
+//#define USE_HYPERBOLIC
 
-//#define USE_LHD
-//#define MAX_AGE 200000
-//#define RECOMPUTE_INTVL 1000000
-//#define AGE_COARSENING_ERROR_TOLERANCE 0.01
-//#define USE_AGE_COARSENING
+#define USE_LHD
+#define MAX_AGE 20000
+#define NUM_LHD_CLASS 16
+#define EWMA_DECAY 0.9
 
-#define REBALANCE_INTVL 2000000
+#define RECONFIGURE_INTVL 1000000
+#define AGE_COARSENING_ERROR_TOLERANCE 0.01
+
+
+
+#define REBALANCE_INTVL (2000000 * 1000)
 
 #define EVICTION_AGE        1
 #define EVICTION_RATE       2       // this is not right, don't use
@@ -18,7 +22,7 @@
 
 #define USE_RANDOM_EXPIRE    1
 
-#define REAL_COPY
+//#define REAL_COPY
 
 //#undef MAX_AGE
 //#undef AGE_GRANULARITY

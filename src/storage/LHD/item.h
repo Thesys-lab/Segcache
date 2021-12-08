@@ -65,13 +65,15 @@ struct item {
                                       * support the largest value size allowed
                                       * by the implementation, i.e. SLAB_MAX_SIZE
                                       */
-    int32_t         tag_idx;
     uint32_t          offset;        /* offset of item in slab */
     int32_t          refcount;
 
 
 #ifdef USE_LHD
-    uint64_t        v_create_time;
+    uint64_t        access_time;
+    uint32_t        last_age;
+    uint32_t        last_last_age;
+//    bool            explorer;
 #elif defined(USE_HYPERBOLIC)
     int32_t          freq;
 #endif
