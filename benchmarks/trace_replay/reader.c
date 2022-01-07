@@ -184,7 +184,7 @@ read_trace(struct reader *reader)
             break;
     }
 
-//    uint16_t ns = *(uint16_t *) (mmap + 20);
+    uint16_t ns = *(uint16_t *) (mmap + 20);
     uint32_t ttl = *(int32_t *)(mmap + 22);
 
     if (ttl == 0) {
@@ -205,7 +205,7 @@ read_trace(struct reader *reader)
     reader->e->op = op;
     reader->e->ttl = (int) ttl;
     reader->e->expire_at = (int) (ts + ttl);
-
+    reader->e->ns = ns;
     return 0;
 }
 

@@ -71,7 +71,7 @@ bench_storage_deinit(void)
 rstatus_i
 bench_storage_get(struct benchmark_entry *e)
 {
-    static __thread char data[1*MiB];
+//    static __thread char data[1*MiB];
     struct bstring key = {.data = e->key, .len = e->key_len};
 
 //    lockmylock();
@@ -140,14 +140,12 @@ bench_storage_set(struct benchmark_entry *e)
 //    lock_bucket(e->key, e->key_len);
 
     item_rstatus_e status =
-            item_reserve(&it, &key, &val, val.len, 0, e->expire_at);
+            item_reserve(&it, &key, &val, val.len, 0, e->expire_at, e->ns);
     if (status != ITEM_OK)
         return CC_ENOMEM;
 
     log_debug("set item %p", it);
 //    unlockmylock();
-
-//    usleep(1);
 
 #ifdef VERIFY_DATA
     ASSERT(e->key_len == it->klen);
@@ -180,7 +178,7 @@ bench_storage_add(struct benchmark_entry *e)
 
     struct bstring val = {.data = e->val, .len = e->val_len};
     item_rstatus_e status =
-            item_reserve(&it, &key, &val, val.len, 0, e->expire_at);
+            item_reserve(&it, &key, &val, val.len, 0, e->expire_at, e->ns);
     if (status != ITEM_OK)
         return CC_ENOMEM;
 
@@ -205,7 +203,7 @@ bench_storage_replace(struct benchmark_entry *e)
 
     struct bstring val = {.data = e->val, .len = e->val_len};
     item_rstatus_e status =
-            item_reserve(&it, &key, &val, val.len, 0, e->expire_at);
+            item_reserve(&it, &key, &val, val.len, 0, e->expire_at, e->ns);
     if (status != ITEM_OK)
         return CC_ENOMEM;
 
@@ -233,7 +231,7 @@ bench_storage_cas(struct benchmark_entry *e)
 
     struct bstring val = {.data = e->val, .len = e->val_len};
     item_rstatus_e status =
-            item_reserve(&it, &key, &val, val.len, 0, e->expire_at);
+            item_reserve(&it, &key, &val, val.len, 0, e->expire_at, e->ns);
     if (status != ITEM_OK)
         return CC_ENOMEM;
 
@@ -275,7 +273,7 @@ bench_storage_incr(struct benchmark_entry *e)
         return ITEM_OK;
     }
 
-    status = item_reserve(&it, &key, &nval, nval.len, 0, it->expire_at);
+    status = item_reserve(&it, &key, &nval, nval.len, 0, it->expire_at, e->ns);
     if (status == ITEM_OK) {
         item_insert(it, &key);
     }
@@ -318,7 +316,7 @@ bench_storage_decr(struct benchmark_entry *e)
         return ITEM_OK;
     }
 
-    status = item_reserve(&it, &key, &nval, nval.len, 0, it->expire_at);
+    status = item_reserve(&it, &key, &nval, nval.len, 0, it->expire_at, e->ns);
     if (status == ITEM_OK) {
         item_insert(it, &key);
     }

@@ -73,6 +73,7 @@ struct item {
     uint64_t        access_time;
     uint32_t        last_age;
     uint32_t        last_last_age;
+    uint8_t        ns;
 //    bool            explorer;
 #elif defined(USE_HYPERBOLIC)
     int32_t          freq;
@@ -243,7 +244,7 @@ void item_insert(struct item *it, const struct bstring *key);
  * data, e.g. flag in Memcached protocol) in payload, after cas.
  * */
 item_rstatus_e item_reserve(struct item **it_p, const struct bstring *key, const
-        struct bstring *val, uint32_t vlen, uint8_t olen, proc_time_i expire_at);
+        struct bstring *val, uint32_t vlen, uint8_t olen, proc_time_i expire_at, uint8_t ns);
 /* item_release is used for reserved item only (not linked) */
 void item_release(struct item **it_p);
 

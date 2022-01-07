@@ -40,6 +40,7 @@ struct benchmark_entry {
     proc_time_i expire_at;
     delta_time_i ttl;
     op_e op;
+    uint8_t ns;
 };
 
 struct benchmark {

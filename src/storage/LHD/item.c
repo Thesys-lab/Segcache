@@ -425,7 +425,7 @@ item_get(const struct bstring *key)
 /* TODO(yao): move this to memcache-specific location */
 static void
 _item_define(struct item *it, const struct bstring *key, const struct bstring
-        *val, uint8_t olen, proc_time_i expire_at)
+        *val, uint8_t olen, proc_time_i expire_at, const uint8_t ns)
 {
     proc_time_i expire_cap = time_delta2proc_sec(max_ttl);
 
@@ -448,6 +448,7 @@ _item_define(struct item *it, const struct bstring *key, const struct bstring
 #endif
     it->vlen = (val == NULL) ? 0 : val->len;
 
+    it->ns = ns;
 
     ASSERT(it->is_linked == 0);
     ASSERT(it->in_freeq == 0);
@@ -456,7 +457,7 @@ _item_define(struct item *it, const struct bstring *key, const struct bstring
 
 item_rstatus_e
 item_reserve(struct item **it_p, const struct bstring *key, const struct bstring
-        *val, uint32_t vlen, uint8_t olen, proc_time_i expire_at)
+        *val, uint32_t vlen, uint8_t olen, proc_time_i expire_at, uint8_t ns)
 {
     item_rstatus_e status;
     struct item *it;
@@ -468,7 +469,7 @@ item_reserve(struct item **it_p, const struct bstring *key, const struct bstring
 
     it = *it_p;
 
-    _item_define(it, key, val, olen, expire_at);
+    _item_define(it, key, val, olen, expire_at, ns);
 
     log_verb("reserve it %p of id %"PRIu8" for key '%.*s' optional len %"PRIu8,
             it, it->id,key->len, key->data, olen);
@@ -584,9 +585,6 @@ static struct item * rand_evict(struct slabclass *p) {
         it = slab_to_item(p->slab_list[slab_idx], item_idx, p->size);
         if (it->in_freeq || it->is_linked == 0) {
             i += 1;
-//            printf("i %d %d %d %d %d\n", i, it->in_freeq, it->is_linked == 0,
-//                                    __atomic_load_n(&it->locked, __ATOMIC_ACQUIRE) == 1,
-//                                    __atomic_load_n(&it->refcount, __ATOMIC_ACQUIRE) > 0);
             continue;
         }
 #if defined(USE_RANDOM_EXPIRE) && USE_RANDOM_EXPIRE == 1

@@ -140,7 +140,6 @@ static void model_hit_density() {
 
 // returns something like log(maxAge - age)
 static inline int lhd_class_id(struct item *it) {
-
     uint64_t age = it->last_age + it->last_last_age;
 
     if (age == 0) { return NUM_LHD_CLASS - 1; }
@@ -149,7 +148,12 @@ static inline int lhd_class_id(struct item *it) {
         age <<= 1;
         log += 1;
     }
+
+//    return it->ns;
+
+    ASSERT(log < NUM_LHD_CLASS_PER_NS);
     return log;
+//    return it->ns * NUM_LHD_CLASS_PER_NS + log;
 }
 
 static inline uint64_t lhd_age(struct item *it) {
