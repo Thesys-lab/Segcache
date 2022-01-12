@@ -278,7 +278,8 @@ segevict_setup(evict_policy_e ev_policy, uintmax_t seg_mature_time)
     struct merge_opts *mopt = &evict_info.merge_opt;
     mopt->target_ratio = 1.0 / mopt->seg_n_merge;
     /* stop if the bytes on the merged seg is more than the threshold */
-    mopt->stop_ratio   = mopt->target_ratio * (mopt->seg_n_merge - 1) + 0.05;
+    // mopt->stop_ratio   = mopt->target_ratio * (mopt->seg_n_merge - 1) + 0.05;
+    mopt->stop_ratio   = 0.9; 
     mopt->stop_bytes   = (int32_t) (heap.seg_size * mopt->stop_ratio);
 
     srand(time(NULL));

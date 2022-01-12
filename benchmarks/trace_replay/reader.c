@@ -84,7 +84,7 @@ open_trace(const char *trace_path, const int32_t * default_ttls, const bool nott
     reader->start_ts = ts;
 
     /* size of one request, hard-coded for the trace type */
-    reader->trace_entry_size = 34;
+    reader->trace_entry_size = 20;
 
     if (reader->file_size % reader->trace_entry_size != 0) {
         log_warn("trace file size %zu is not multiple of item size %zu\n",
@@ -265,7 +265,7 @@ read_trace2(struct reader *reader)
 }
 
 int read_trace(struct reader *reader) {
-    return read_trace2(reader); 
+    return read_trace1(reader); 
 }
 
 
