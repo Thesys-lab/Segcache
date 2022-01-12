@@ -11,8 +11,12 @@
 
 extern struct seg_evict_info evict_info;
 extern struct ttl_bucket     ttl_buckets[MAX_N_TTL_BUCKET];
-extern seg_metrics_st        *seg_metrics;
+extern seg_metrics_st        *seg_metrics; 
 extern seg_perttl_metrics_st perttl[MAX_N_TTL_BUCKET];
+
+static uint64_t seg_evict_seg_cnt = 0; 
+static uint64_t seg_evict_seg_sum = 0; 
+
 
 static inline void
 seg_copy(int32_t seg_id_dest, int32_t seg_id_src,
@@ -26,17 +30,21 @@ merge_segs(struct seg *segs_to_merge[],
 static inline uint64_t
 n_evicted_seg(void)
 {
-    return __atomic_load_n(
-        &seg_metrics->seg_evict_seg_cnt.counter, __ATOMIC_RELAXED);
+    return __atomic_load_n(&seg_evict_seg_cnt, __ATOMIC_RELAXED); 
+    // return __atomic_load_n(
+    //     &seg_metrics->seg_evict_seg_cnt.counter, __ATOMIC_RELAXED);
 }
 
 static inline uint64_t
 cal_mean_eviction_age(void)
 {
-    uint64_t evict_age_sum = __atomic_load_n(
-        &seg_metrics->seg_evict_age_sum.counter, __ATOMIC_RELAXED);
-    uint64_t evict_seg_cnt = __atomic_load_n(
-        &seg_metrics->seg_evict_seg_cnt.counter, __ATOMIC_RELAXED);
+    // uint64_t evict_age_sum = __atomic_load_n(
+    //     &((seg_metrics->seg_evict_age_sum).counter), __ATOMIC_RELAXED);
+    // uint64_t evict_seg_cnt = __atomic_load_n(
+    //     &(seg_metrics->seg_evict_seg_cnt.counter), __ATOMIC_RELAXED);
+
+    uint64_t evict_age_sum = __atomic_load_n(&seg_evict_seg_sum, __ATOMIC_RELAXED);
+    uint64_t evict_seg_cnt = __atomic_load_n(&seg_evict_seg_cnt, __ATOMIC_RELAXED);
 
     if (evict_seg_cnt == 0) {
         return 86400;
