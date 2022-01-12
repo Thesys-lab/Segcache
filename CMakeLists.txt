@@ -54,12 +54,12 @@ set(${PROJECT_NAME}_RELEASE_VERSION
    )
 
 # flags => compile-time variables: use modules/macros
-option(HAVE_ASSERT_LOG "assert_log enabled by default" ON)
+option(HAVE_ASSERT_LOG "assert_log enabled by default" OFF)
 option(HAVE_ASSERT_PANIC "assert_panic disabled by default" OFF)
-option(HAVE_LOGGING "logging enabled by default" ON)
+option(HAVE_LOGGING "logging enabled by default" OFF)
 option(HAVE_STATS "stats enabled by default" ON)
-option(HAVE_TEST "test built by default" ON)
-option(HAVE_DEBUG_MM "debugging oriented memory management disabled by default" OFF)
+option(HAVE_TEST "test built by default" OFF)
+option(HAVE_DEBUG_MM "debugging oriented memory management disabled by default" OFF) 
 option(HAVE_COVERAGE "code coverage" OFF)
 option(HAVE_RUST "rust bindings not built by default" OFF)
 option(HAVE_ITT_INSTRUMENTATION "instrument code with ITT API" OFF)

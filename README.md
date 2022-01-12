@@ -3,6 +3,10 @@
 This repo contains the code of Segcache described in the following paper:
 * [Segcache: a memory-efficient and scalable in-memory key-value cache for small objects](https://www.usenix.org/conference/nsdi21/presentation/yang-juncheng). 
 
+## Note
+Segcache has been re-implemented in Rust version of [Pelikan](http://www.github.com/twitter/pelikan/), and this repo is not maintained anymore. 
+
+
 ## Repository structure 
 * [benchmarks](benchmark): code for running the evaluation benchmarks 
 * [src/storage/seg](src/storage/seg): implementation of Segcache 
@@ -10,10 +14,9 @@ This repo contains the code of Segcache described in the following paper:
 
 ## Usage 
 ### Requirement
-- platform: Mac OS X or Linux
+- platform: Linux
 - build tools: `cmake (>=2.8)`
 - compiler: `gcc (>=4.8)` or `clang (>=3.1)`
-- (optional) unit testing framework: `check (>=0.10.0)`. See below.
 
 ### Build
 ```sh
@@ -22,22 +25,15 @@ mkdir _build && cd _build
 cmake ..
 make -j
 ```
-The executables can be found under ``_bin/`` (under build directory)
+The executables can be found under ``_benchmarks/`` (under build directory)
 
-To run all the tests, including those on `ccommon`, run:
-```sh
-make test
-```
-
-To skip building tests, replace the `cmake` step with the following:
-```sh
-cmake -DCHECK_WORKING=off ..
-```
+when debugging you can turn on debug mode and assert by 
+`cmake -DCMAKE_BUILD_TYPE=Debug -DHAVE_ASSERT_PANIC=on ..`
 
 
 
 ### Run benchmarks 
-After building, you should have `_build/bin/trace_replay_seg` and `_build/bin/trace_replay_slab` which are the benchmarks for Segcache and Pelikan_twemcache. 
+After building, you should have `_build/trace_replay_seg` and `_build/trace_replay_slab` which are the benchmarks for Segcache and Pelikan_twemcache. 
 To run them, you can do 
 ```sh
 ./trace_replay_slab trace_replay_slab.conf
