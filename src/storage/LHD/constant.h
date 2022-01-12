@@ -24,7 +24,7 @@
 
 #define USE_RANDOM_EXPIRE    1
 
-//#define REAL_COPY
+#define REAL_COPY
 
 //#undef MAX_AGE
 //#undef AGE_GRANULARITY

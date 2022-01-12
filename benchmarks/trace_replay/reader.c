@@ -23,16 +23,6 @@
 #include <sysexits.h>
 
 
-//static const char *const key_array = "1234567890abcdefghijklmnopqrstuvwxyz_"
-//                                     "1234567890abcdefghijklmnopqrstuvwxyz_"
-//                                     "1234567890abcdefghijklmnopqrstuvwxyz_"
-//                                     "1234567890abcdefghijklmnopqrstuvwxyz_"
-//                                     "1234567890abcdefghijklmnopqrstuvwxyz_"
-//                                     "1234567890abcdefghijklmnopqrstuvwxyz_"
-//                                     "1234567890abcdefghijklmnopqrstuvwxyz_"
-//                                     "1234567890abcdefghijklmnopqrstuvwxyz_"
-//                                     "1234567890abcdefghijklmnopqrstuvwxyz";
-
 static char val_array[MAX_VAL_LEN] = {'A'};
 
 
@@ -94,14 +84,14 @@ open_trace(const char *trace_path, const int32_t * default_ttls, const bool nott
     reader->start_ts = ts;
 
     /* size of one request, hard-coded for the trace type */
-    size_t item_size = 34;
+    reader->trace_entry_size = 34;
 
-    if (reader->file_size % item_size != 0) {
+    if (reader->file_size % reader->trace_entry_size != 0) {
         log_warn("trace file size %zu is not multiple of item size %zu\n",
-                reader->file_size, item_size);
+                reader->file_size, reader->trace_entry_size);
     }
 
-    reader->n_total_req = reader->file_size / item_size;
+    reader->n_total_req = reader->file_size / reader->trace_entry_size;
     reader->e =
             (struct benchmark_entry *)cc_zalloc(sizeof(struct benchmark_entry));
     reader->e->val = val_array;
@@ -112,7 +102,6 @@ open_trace(const char *trace_path, const int32_t * default_ttls, const bool nott
     close(fd);
     return reader;
 }
-
 
 /*
  * read one request from trace and store in benchmark_entry
@@ -134,8 +123,74 @@ open_trace(const char *trace_path, const int32_t * default_ttls, const bool nott
  *
  */
 int
-read_trace(struct reader *reader)
+read_trace1(struct reader *reader)
 {
+    ASSERT(reader->trace_entry_size == 20); /* hard-coded for the trace type */
+    size_t offset = __atomic_fetch_add(&reader->offset, 20, __ATOMIC_RELAXED);
+    if (offset >= reader->file_size) {
+        return 1;
+    }
+
+    char *mmap = reader->mmap + offset;
+    uint32_t ts = *(uint32_t *)mmap - reader->start_ts + 1;
+    reader->curr_ts = ts;
+    if (reader->update_time) {
+        __atomic_store_n(&proc_sec, reader->curr_ts, __ATOMIC_RELAXED);
+    }
+    mmap += 4;
+
+    uint64_t key = *(uint64_t *)mmap;
+    mmap += 8;
+    uint32_t kv_len = *(uint32_t *)mmap;
+    mmap += 4;
+    uint32_t op_ttl = *(uint32_t *)mmap;
+
+    uint32_t key_len = (kv_len >> 22) & (0x00000400 - 1);
+    uint32_t val_len = kv_len & (0x00400000 - 1);
+
+    if (key_len == 0) {
+        printf("trace contains request of key size 0, object id %" PRIu64 "\n",
+                key);
+        return read_trace(reader);
+    }
+
+    if (key_len < 8) {
+        key_len = 8; 
+    }
+
+    uint32_t op = (op_ttl >> 24u) & (0x00000100 - 1);
+    uint32_t ttl = op_ttl & (0x01000000 - 1);
+    if (ttl == 0) {
+        ttl = reader->default_ttls[reader->default_ttl_idx];
+        reader->default_ttl_idx = (reader->default_ttl_idx + 1) % 100;
+    }
+
+    ASSERT(ttl != 0);
+
+    if (op <= 0 || op >= 12) {
+        printf("unknown op %d\n", op);
+        op = 1;
+    }
+
+    *(uint64_t *) (reader->e->key) = key + reader->reader_id * 10000000000;
+
+//    /* it is possible we have overflow here, but it should be rare */
+//    snprintf(reader->e->key, key_len, "%.*lu", key_len-1, (unsigned long)key);
+
+    reader->e->key_len = key_len;
+    reader->e->val_len = val_len;
+    reader->e->op = op - 1;
+    reader->e->ttl = ttl;
+    reader->e->expire_at = ts + ttl;
+
+    return 0;
+}
+
+
+int
+read_trace2(struct reader *reader)
+{
+    ASSERT(reader->trace_entry_size == 34); /* hard-coded for the trace type */
     size_t offset = __atomic_fetch_add(&reader->offset, 34, __ATOMIC_RELAXED);
     if (offset >= reader->file_size) {
         return 1;
@@ -207,6 +262,10 @@ read_trace(struct reader *reader)
     reader->e->expire_at = (int) (ts + ttl);
     reader->e->ns = ns;
     return 0;
+}
+
+int read_trace(struct reader *reader) {
+    return read_trace2(reader); 
 }
 
 

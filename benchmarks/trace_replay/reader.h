@@ -18,6 +18,7 @@ struct reader {
     bool nottl;
 
     size_t offset;
+    size_t trace_entry_size; 
     size_t file_size;
     char trace_path[MAX_TRACE_PATH_LEN];
     uint64_t n_total_req;
