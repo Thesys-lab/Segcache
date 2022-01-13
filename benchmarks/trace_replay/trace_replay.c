@@ -239,6 +239,7 @@ _time_update_thread(void *arg)
     pthread_setname_np(pthread_self(), "time");
 #endif
 
+    time_t wall_clock = time(NULL); 
     proc_sec = 0;
     bool stop_local = __atomic_load_n(&stop, __ATOMIC_RELAXED);
     while (!stop_local) {
@@ -251,7 +252,7 @@ _time_update_thread(void *arg)
         if (proc_sec < min_ts) {
             __atomic_store_n(&proc_sec, min_ts, __ATOMIC_RELAXED);
             if (min_ts % 3600 == 0) {
-                printf("curr sec %d\n", min_ts);
+                printf("clock time %ld, trace time %d\n", time(NULL) - wall_clock, min_ts);
             }
         }
         proc_sec = min_ts;
@@ -263,7 +264,7 @@ _time_update_thread(void *arg)
     return NULL;
 }
 
-
+#define CORE_IDX_START 0
 static void *
 _trace_replay_thread(void *arg)
 {
@@ -280,19 +281,19 @@ _trace_replay_thread(void *arg)
       pthread_t thread = pthread_self();
 
       CPU_ZERO(&cpuset);
-      CPU_SET(idx, &cpuset);
+      CPU_SET(CORE_IDX_START + idx, &cpuset); 
 
       if (pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset) != 0) {
           printf("fail to bind worker thread to core %lu: %s\n",
-                 idx, strerror(errno));
+                 CORE_IDX_START + idx, strerror(errno));
       } else {
-        printf("binding worker thread to core %lu\n", idx);
+        printf("binding worker thread to core %lu\n", CORE_IDX_START + idx);
       }
 
 #endif
 
       char thread_name[16];
-      snprintf(thread_name, 16, "replay_%lu", (unsigned long) idx);
+      snprintf(thread_name, 16, "replay_%lu", (unsigned long) CORE_IDX_START + idx);
 
 #ifdef __APPLE__
     pthread_setname_np(thread_name);

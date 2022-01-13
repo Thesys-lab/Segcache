@@ -61,7 +61,8 @@ struct request {
     uint32_t ttl:24
 }; 
 ```
-
+### Scalability 
+If want to run multiple threads, besides modifying the configuration, you need to enable `USE_THREAD_LOCAL_SEG` in `src/storage/seg/constant.h` and use a large enough cache size. 
 
 ### License 
 This software is licensed under the Apache 2.0 license, see LICENSE for details.

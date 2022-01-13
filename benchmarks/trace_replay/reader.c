@@ -25,6 +25,8 @@
 
 static char val_array[MAX_VAL_LEN] = {'A'};
 
+int read_trace1(struct reader *reader); 
+int read_trace2(struct reader *reader); 
 
 /**
  * default ttl is an array of 100 elements, if single ttl then the array is
@@ -265,7 +267,14 @@ read_trace2(struct reader *reader)
 }
 
 int read_trace(struct reader *reader) {
-    return read_trace1(reader); 
+    if (reader->trace_entry_size == 20) {
+        return read_trace1(reader); 
+    } else if (reader->trace_entry_size == 34) {
+        return read_trace2(reader);
+    } else {
+        printf("unsupported trace entry size %ld\n", reader->trace_entry_size);
+        abort();
+    }
 }
 
 
