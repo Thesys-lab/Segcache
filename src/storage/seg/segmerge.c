@@ -112,19 +112,30 @@ static void
 prep_seg_to_merge(int32_t start_seg_id,
                   struct seg *segs_to_merge[],
                   int *n_evictable_seg,
-                  double *merge_keep_ratio)
+                  double *merge_keep_ratio, 
+                  int32_t *next_seg_to_merge)
 {
 
     *n_evictable_seg = 0;
     int32_t    curr_seg_id = start_seg_id;
     struct seg *curr_seg;
+    uint64_t n_live_bytes = 0; 
 
     /* TODO(juncheng): do we need lock */
     pthread_mutex_lock(&heap.mtx);
     for (int i = 0; i < evict_info.merge_opt.seg_n_max_merge; i++) {
         if (curr_seg_id == -1) {
+            *next_seg_to_merge = -1; 
             break;
         }
+
+#ifdef USE_THREAD_LOCAL_SEG
+        if (n_live_bytes > heap.seg_size + heap.seg_size >> 1) {
+            *next_seg_to_merge = curr_seg_id;
+            break; 
+        }
+#endif 
+
         curr_seg = &heap.segs[curr_seg_id];
         if (!seg_evictable(curr_seg)) {
             break;
@@ -132,6 +143,8 @@ prep_seg_to_merge(int32_t start_seg_id,
 //            continue;
         }
         uint8_t evictable = __atomic_exchange_n(&curr_seg->evictable, 0, __ATOMIC_RELAXED);
+        n_live_bytes += curr_seg->live_bytes;
+
 #ifdef CC_ASSERT_PANIC
         ASSERT(evictable = 1);
 #endif
@@ -285,15 +298,29 @@ seg_merge_evict(int32_t *seg_id_ret)
             continue;
         }
 
+        int32_t next_seg_to_merge = -1; 
         /* we have found enough consecutive evictable segments,
          * block the eviction of next seg_n_max_merge segments */
         prep_seg_to_merge(seg->seg_id, segs_to_merge,
-            &n_evictable_seg, merge_keep_ratio);
+            &n_evictable_seg, merge_keep_ratio, &next_seg_to_merge);
 
+#ifdef USE_THREAD_LOCAL_SEG
+        ttl_buckets[bkt_idx].next_seg_to_merge = next_seg_to_merge;
+
+        // move this from after merge to before merge, could cause a bug, 
+        // but this change signifcantly reduces contention 
+        // but we trade off some efficiency for scalability, need a better design
+        pthread_mutex_unlock(&ttl_bkt->mtx);
+
+        merge_segs(segs_to_merge, n_evictable_seg, merge_keep_ratio);
+
+#else 
         ttl_buckets[bkt_idx].next_seg_to_merge =
             merge_segs(segs_to_merge, n_evictable_seg, merge_keep_ratio);
 
         pthread_mutex_unlock(&ttl_bkt->mtx);
+#endif 
+
 
         last_bkt_idx = bkt_idx;
 
@@ -641,21 +668,21 @@ merge_segs(struct seg *segs_to_merge[],
         __atomic_store_n(&new_seg->evictable, 1, __ATOMIC_RELAXED);
         successful_merge += 1;
 
-        /* print stat */
-        char     merged_segs[1024];
-        int      pos       = 0;
-        for (int i         = 0; i < n_merged; i++) {
-            pos += snprintf(merged_segs + pos, 1024 - pos, "%d, ",
-                segs_to_merge[i]->seg_id);
-        }
-        log_debug("ttl %d, merged %d/%d segs (%s) to seg %d, "
-                  "curr #free segs %d, new seg offset %d, occupied size %d, "
-                  "%d items",
-            new_seg->ttl, n_merged, n_evictable, merged_segs, new_seg_id,
-            heap.n_free_seg, new_seg->write_offset,
-            new_seg->live_bytes, new_seg->n_live_item);
+        // /* print stat */
+        // char     merged_segs[1024];
+        // int      pos       = 0;
+        // for (int i         = 0; i < n_merged; i++) {
+        //     pos += snprintf(merged_segs + pos, 1024 - pos, "%d, ",
+        //         segs_to_merge[i]->seg_id);
+        // }
+        // log_debug("ttl %d, merged %d/%d segs (%s) to seg %d, "
+        //           "curr #free segs %d, new seg offset %d, occupied size %d, "
+        //           "%d items",
+        //     new_seg->ttl, n_merged, n_evictable, merged_segs, new_seg_id,
+        //     heap.n_free_seg, new_seg->write_offset,
+        //     new_seg->live_bytes, new_seg->n_live_item);
 
-        log_verb("***************************************************");
+        // log_verb("***************************************************");
 
         return heap.segs[new_seg_id].next_seg_id;
     }
