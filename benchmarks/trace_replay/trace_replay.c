@@ -36,9 +36,10 @@ volatile static uint64_t    n_miss = 0;
 static delta_time_i         default_ttls[100];
 
 
-#define BENCHMARK_OPTION(ACTION)                                                                    \
+#define BENCHMARK_OPTION(ACTION)                                                                            \
     ACTION(trace_path,      OPTION_TYPE_STR,    NULL,           "path to the trace")                        \
     ACTION(default_ttl_list,OPTION_TYPE_STR,    "86400:1",      "a comma separated list of ttl:percent")    \
+    ACTION(trace_type,      OPTION_TYPE_STR,    "twrns",        "trace type")                               \
     ACTION(n_thread,        OPTION_TYPE_UINT,   1,              "the number of threads")                    \
     ACTION(debug_logging,   OPTION_TYPE_BOOL,   true,           "turn on debug logging")                    \
     ACTION(time_speedup,    OPTION_TYPE_UINT,   1,              "speed up the time in replay")              \
@@ -132,12 +133,26 @@ benchmark_create(struct benchmark *b, const char *config)
     n_thread     = O_UINT(b, n_thread);
     time_speedup = O_UINT(b, time_speedup);
     int nottl    = O_UINT(b, nottl);
+    char         *trace_type_str = O_STR(b, trace_type);
+
+    trace_type_e trace_type; 
+    if (strcasecmp(trace_type_str, "twrns") == 0) {
+        trace_type = TRACE_TWRNS;
+    } else if (strcasecmp(trace_type_str, "oracleSysTwrNS") == 0) {
+        trace_type = TRACE_ORACLE_SYS_TWR_NS;
+    } else if (strcasecmp(trace_type_str, "oracleGeneral") == 0) {
+        trace_type = TRACE_ORACLE_GENERAL;
+    } else {
+        printf("unknown trace type %s\n", trace_type_str); 
+        abort();
+    }
+
 
     if (n_thread > 1) {
         char     path[MAX_TRACE_PATH_LEN];
         for (int i = 0; i < n_thread; i++) {
             sprintf(path, "%s.%d", O_STR(b, trace_path), i);
-            readers[i] = open_trace(path, default_ttls, nottl);
+            readers[i] = open_trace(path, trace_type, default_ttls, nottl);
             readers[i]->reader_id = i;
             if (readers[i] == NULL) {
                 printf("failed to open trace %s\n", path);
@@ -145,7 +160,7 @@ benchmark_create(struct benchmark *b, const char *config)
             }
         }
     } else {
-        readers[0] = open_trace(O_STR(b, trace_path), default_ttls, nottl);
+        readers[0] = open_trace(O_STR(b, trace_path), trace_type, default_ttls, nottl);
         readers[0]->reader_id = 0;
         if (readers[0] == NULL) {
             printf("failed to open trace %s\n", O_STR(b, trace_path));

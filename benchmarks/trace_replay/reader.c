@@ -25,8 +25,10 @@
 
 static char val_array[MAX_VAL_LEN] = {'A'};
 
-int read_trace1(struct reader *reader); 
-int read_trace2(struct reader *reader); 
+int read_trace_twrNS(struct reader *reader); 
+int read_trace_oracleSysTwrNS(struct reader *reader); 
+int read_trace_oracleGeneral(struct reader *reader); 
+
 
 /**
  * default ttl is an array of 100 elements, if single ttl then the array is
@@ -38,7 +40,7 @@ int read_trace2(struct reader *reader);
  * @return
  */
 struct reader *
-open_trace(const char *trace_path, const int32_t * default_ttls, const bool nottl)
+open_trace(const char *trace_path, const trace_type_e trace_type, const int32_t * default_ttls, const bool nottl)
 {
     int fd;
     struct stat st;
@@ -49,6 +51,7 @@ open_trace(const char *trace_path, const int32_t * default_ttls, const bool nott
         val_array[i] = (char)('A' + i % 26);
 
     reader->reader_id = 0;
+    reader->trace_type = trace_type;
     reader->default_ttls = default_ttls;
     reader->default_ttl_idx = 0;
     strcpy(reader->trace_path, trace_path);
@@ -85,8 +88,12 @@ open_trace(const char *trace_path, const int32_t * default_ttls, const bool nott
     uint32_t ts = *(uint32_t *) (reader->mmap);
     reader->start_ts = ts;
 
-    /* size of one request, hard-coded for the trace type */
-    reader->trace_entry_size = 20;
+    switch (reader->trace_type) {
+        case TRACE_TWRNS: reader->trace_entry_size = 20;
+        case TRACE_ORACLE_SYS_TWR_NS: reader->trace_entry_size = 34;
+        case TRACE_ORACLE_GENERAL: reader->trace_entry_size = 24;
+    }
+    
 
     if (reader->file_size % reader->trace_entry_size != 0) {
         log_warn("trace file size %zu is not multiple of item size %zu\n",
@@ -125,7 +132,7 @@ open_trace(const char *trace_path, const int32_t * default_ttls, const bool nott
  *
  */
 int
-read_trace1(struct reader *reader)
+read_trace_twrNS(struct reader *reader)
 {
     ASSERT(reader->trace_entry_size == 20); /* hard-coded for the trace type */
     size_t offset = __atomic_fetch_add(&reader->offset, 20, __ATOMIC_RELAXED);
@@ -190,7 +197,7 @@ read_trace1(struct reader *reader)
 
 
 int
-read_trace2(struct reader *reader)
+read_trace_oracleSysTwrNS(struct reader *reader)
 {
     ASSERT(reader->trace_entry_size == 34); /* hard-coded for the trace type */
     size_t offset = __atomic_fetch_add(&reader->offset, 34, __ATOMIC_RELAXED);
@@ -266,11 +273,42 @@ read_trace2(struct reader *reader)
     return 0;
 }
 
+
+int
+read_trace_oracleGeneral(struct reader *reader)
+{
+    ASSERT(reader->trace_entry_size == 24); /* hard-coded for the trace type */
+    size_t offset = __atomic_fetch_add(&reader->offset, reader->trace_entry_size, __ATOMIC_RELAXED);
+    if (offset >= reader->file_size) {
+        return 1;
+    }
+
+    char *mmap = reader->mmap + offset;
+
+    uint32_t ts = *(uint32_t *)mmap - reader->start_ts + 1;
+    reader->curr_ts = (int32_t) ts;
+    if (reader->update_time) {
+        __atomic_store_n(&proc_sec, reader->curr_ts, __ATOMIC_RELAXED);
+    }
+
+    uint64_t key = *(uint64_t *)(mmap + 4);
+    *(uint64_t *) (reader->e->key) = key + reader->reader_id * 10000000000;
+
+    reader->e->key_len = 8;
+    reader->e->val_len = *(uint32_t *)(mmap + 12);
+    reader->e->op = op_get;
+    reader->e->ttl = 2000000;
+    reader->e->expire_at = (int) (ts + reader->e->ttl);
+    return 0;
+}
+
 int read_trace(struct reader *reader) {
-    if (reader->trace_entry_size == 20) {
-        return read_trace1(reader); 
-    } else if (reader->trace_entry_size == 34) {
-        return read_trace2(reader);
+    if (reader->trace_type == TRACE_TWRNS) {
+        return read_trace_twrNS(reader); 
+    } else if (reader->trace_type == TRACE_ORACLE_SYS_TWR_NS) {
+        return read_trace_oracleSysTwrNS(reader);
+    } else if (reader->trace_type == TRACE_ORACLE_GENERAL) {
+        return read_trace_oracleGeneral(reader);
     } else {
         printf("unsupported trace entry size %ld\n", reader->trace_entry_size);
         abort();

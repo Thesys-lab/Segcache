@@ -12,9 +12,17 @@
 
 struct benchmark_entry;
 
+typedef enum {
+    TRACE_TWRNS, 
+    TRACE_ORACLE_SYS_TWR_NS, 
+    TRACE_ORACLE_GENERAL, 
+} trace_type_e; 
+
 
 struct reader {
     char *mmap;
+    trace_type_e trace_type; 
+
     bool nottl;
 
     size_t offset;
@@ -34,7 +42,7 @@ struct reader {
 
 
 struct reader *
-open_trace(const char *trace_path, const int32_t *default_ttls, const bool nottl);
+open_trace(const char *trace_path, const trace_type_e trace_type, const int32_t *default_ttls, const bool nottl);
 
 
 /*
