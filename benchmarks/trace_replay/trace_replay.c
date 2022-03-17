@@ -34,6 +34,7 @@ volatile static uint64_t    n_get_req = 0;
 volatile static uint64_t    n_miss = 0;
 
 static delta_time_i         default_ttls[100];
+static int                  warmup_time = 0;
 
 
 #define BENCHMARK_OPTION(ACTION)                                                                            \
@@ -43,6 +44,7 @@ static delta_time_i         default_ttls[100];
     ACTION(n_thread,        OPTION_TYPE_UINT,   1,              "the number of threads")                    \
     ACTION(debug_logging,   OPTION_TYPE_BOOL,   true,           "turn on debug logging")                    \
     ACTION(time_speedup,    OPTION_TYPE_UINT,   1,              "speed up the time in replay")              \
+    ACTION(warmup_time,     OPTION_TYPE_UINT,   0,              "cache stat is reset after warmup")         \
     ACTION(nottl,           OPTION_TYPE_UINT,   0,              "whether use trace TTL")                    \
 
 
@@ -130,6 +132,7 @@ benchmark_create(struct benchmark *b, const char *config)
         default_ttls[99] = default_ttls[98];
     }
 
+    warmup_time  = O_UINT(b, warmup_time);
     n_thread     = O_UINT(b, n_thread);
     time_speedup = O_UINT(b, time_speedup);
     int nottl    = O_UINT(b, nottl);
@@ -203,16 +206,28 @@ trace_replay_run(void)
     e->op = op_get;
     run_op(e);
 
+    bool has_warmup = false; 
+
     int32_t last_print = 0;
     while (read_trace(reader) == 0) {
         proc_sec = reader->curr_ts * time_speedup;
-        if (time_proc_sec() % 21600 == 0 && time_proc_sec() != last_print) {
+        if (time_proc_sec() % 86400 == 0 && time_proc_sec() != last_print) {
             last_print = time_proc_sec();
             duration_snapshot(&d1, &d);
             duration_stop(&d1);
             double ds = duration_sec(&d1);
             printf("%.2lf hour, run %.2lf sec, throughput %.2lf MQPS, %ld %ld requests, miss ratio %.4lf\n",
                    (double) time_proc_sec()/3600.0, ds, (double) n_req / 1000000.0 / ds, n_req, n_get_req, (double) n_miss / (double) n_get_req);
+        }
+
+        if ((!has_warmup) && reader->curr_ts > warmup_time) {
+            n_get_req = 0;
+            n_miss = 0; 
+            n_req = 0;
+            printf("warmup at time %d\n", reader->curr_ts); 
+            duration_reset(&d);
+            duration_start(&d);
+            has_warmup = true;
         }
 
         status = run_op(e);
