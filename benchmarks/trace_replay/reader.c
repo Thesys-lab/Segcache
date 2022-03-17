@@ -295,7 +295,7 @@ read_trace_oracleGeneral(struct reader *reader)
     *(uint64_t *) (reader->e->key) = key + reader->reader_id * 10000000000;
 
     reader->e->key_len = 8;
-    reader->e->val_len = *(uint32_t *)(mmap + 12);
+    reader->e->val_len = *(uint32_t *)(mmap + 12) - 32;
     reader->e->op = op_get;
     reader->e->ttl = 2000000;
     reader->e->expire_at = (int) (ts + reader->e->ttl);

@@ -424,7 +424,7 @@ main(int argc, char *argv[])
     }
 
 
-    printf("%s total benchmark runtime: %.2lf s, throughput %.2lf M QPS\n",
+    printf("%s total benchmark runtime: %.2lf s, throughput %.2lf M QPS, ",
             argv[1], duration_sec(&d), n_req / duration_sec(&d) / 1000000);
     printf("average operation latency: %.2lf ns, miss ratio %.4lf\n",
             duration_ns(&d) / n_req, (double)n_miss / n_get_req);
