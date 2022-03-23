@@ -278,3 +278,5 @@ void unlock_bucket(const char *key, uint32_t key_len);
 void lock_slabclass(int id);
 
 void unlock_slabclass(int id);
+
+double cal_slabclass_rank(struct slabclass *p); 

@@ -25,7 +25,7 @@ extern float ewmaNumObjectsMass;
 
 
 
-static inline void init_lhd_class() {
+static inline void init_lhd_class(void) {
     for (int i = 0; i < NUM_LHD_CLASS; i++) {
         for (int j = 0; j < MAX_AGE; j++) {
             LHD_classes[i].hit_density[j] = 1 * (i + 1) / (j + 1);
@@ -33,7 +33,7 @@ static inline void init_lhd_class() {
     }
 }
 
-static void update_lhd_class() {
+static void update_lhd_class(void) {
     for (int i = 0; i < NUM_LHD_CLASS; i++) {
         LHD_classes[i].total_hits = 0;
         LHD_classes[i].total_evictions = 0;
@@ -48,7 +48,7 @@ static void update_lhd_class() {
     }
 }
 
-static void age_coarsening() {
+static void age_coarsening(void) {
     int num_obj = 0;
     for (int i = SLABCLASS_MIN_ID; i <= profile_last_id; i++) {
         num_obj += slabclasses[i].nitem * slabclasses[i].nslabs;
@@ -118,7 +118,7 @@ static void age_coarsening() {
     }
 }
 
-static void model_hit_density() {
+static void model_hit_density(void) {
     for (int i = 0; i < NUM_LHD_CLASS; i++) {
         float total_events = LHD_classes[i].hits[MAX_AGE - 1] + LHD_classes[i].evictions[MAX_AGE - 1];
         float total_hits = LHD_classes[i].hits[MAX_AGE - 1];
@@ -178,17 +178,10 @@ static inline float lhd_get_hit_density(struct item *it) {
     return density;
 }
 
-static void lhd_reconfigure() {
+static void lhd_reconfigure(void) {
     LHD_num_reconfig += 1;
 
     update_lhd_class();
-
-//    float total_hits = 0;
-//    float total_evictions = 0;
-//    for (int i = 0; i < NUM_LHD_CLASS; i++) {
-//        total_hits += LHD_classes[i].total_hits;
-//        total_evictions += LHD_classes[i].total_evictions;
-//    }
 
     age_coarsening();
 

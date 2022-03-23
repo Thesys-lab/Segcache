@@ -211,7 +211,7 @@ _item_alloc(struct item **it_p, uint8_t klen, uint32_t vlen, uint8_t olen)
 
     if (it != NULL) {
         _item_reset(it);
-        int refcount = __atomic_fetch_add(&it->refcount, 1, __ATOMIC_RELAXED);
+        __atomic_fetch_add(&it->refcount, 1, __ATOMIC_RELAXED);
         ASSERT(refcount == 0);
         INCR(slab_metrics, item_curr);
         INCR(slab_metrics, item_alloc);
@@ -283,7 +283,7 @@ _item_link(struct item *it, bool relink)
 
         it->is_linked = 1;
 //        slab_deref(item_to_slab(it)); /* slab ref'ed in _item_alloc */
-        int refcnt = __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
+        __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
         ASSERT(refcnt >= 0);
     }
 
@@ -362,7 +362,6 @@ struct item *
 item_get(const struct bstring *key)
 {
     struct item *it;
-    struct slabclass *p;
 
     if (!LHD_init) {
         init_lhd_class();
@@ -517,8 +516,6 @@ _item_delete(struct item **it)
 
     log_verb("delete it %p of id %"PRIu8, *it, (*it)->id);
 
-    int slabclass_id = (*it)->id;
-
     _item_unlink(*it);
     _item_dealloc(it);
 
@@ -559,6 +556,33 @@ static float cal_item_score(struct item *it) {
 #error unknown
 #endif
 
+}
+
+
+double cal_slabclass_rank(struct slabclass *p) {
+    struct item *it;
+    int n_rank_item = 0;
+    double rank_sum = 0; 
+
+    uint64_t slab_idx, item_idx;
+    int i = 0;
+
+    while (i < RAND_CHOOSE_N) {
+        slab_idx = prand() % (p->nslabs);
+        item_idx = prand() % (p->nitem);
+        it = slab_to_item(p->slab_list[slab_idx], item_idx, p->size);
+        if (it->in_freeq || it->is_linked == 0) {
+            i += 1;
+            continue;
+        }
+
+        double score = cal_item_score(it);
+        rank_sum += score;
+        n_rank_item += 1;
+        i ++;
+    }
+
+    return rank_sum / n_rank_item;
 }
 
 static struct item * rand_evict(struct slabclass *p) {

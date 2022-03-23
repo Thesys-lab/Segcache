@@ -255,20 +255,6 @@ _slab_slabclass_setup(void)
 //        printf("%d %d %d %d\n", id, p->nitem, p->size, p->size * p->nitem);
         ASSERT(p->size * p->nitem <= slab_size - SLAB_HDR_SIZE);
 
-//#ifdef USE_LHD
-//        p->ev_rank = 0;
-//        for (int i = 0; i < MAX_AGE; i++) {
-//            p->n_hit_age[i] = 0;
-//            p->n_evict_age[i] = 0;
-//        }
-//
-//        for (int a = 0; a < MAX_AGE; a++) {
-//            p->LHD[a] = 1. * (id + 1) / (a + 1);
-//        }
-//#endif
-        pthread_mutex_init(&(p->lock), NULL);
-//        log_info("init slab lock %d %p %p %p", id, &(p->lock), p, &slabclasses[id]);
-
         /* chunk_size is static */
         perslab[id] = (perslab_metrics_st){PERSLAB_METRIC(METRIC_INIT)};
         UPDATE_VAL(&perslab[id], chunk_size, item_sz);
@@ -992,7 +978,7 @@ slab_put_item(struct item *it, uint8_t id)
 }
 
 
-void print_nslab(void) {
+static void print_nslab(void) {
     struct slabclass *p;
     printf("n slabs: ");
     for (int i = SLABCLASS_MIN_ID; i <= profile_last_id; i++) {
@@ -1003,71 +989,50 @@ void print_nslab(void) {
 }
 
 void rebalance_slab(void) {
-    double max_evict = 0, min_evict = 0;
-    int max_evict_slab_class = 0, min_evict_slab_class = 0;
+    int max_rank_slab_class = 0, min_rank_slab_class = 0;
     struct slabclass *p;
-    double er;
+    double min_rank = 1.0e20, max_rank = -1;
 
-    return;
+#ifndef USE_SLAB_REBALANCE
+    return; 
+#endif
 
     for (int i = SLABCLASS_MIN_ID; i <= profile_last_id; i++) {
         p = &slabclasses[i];
-#ifdef USE_LHD
-//        if (p->nslabs > 1 && p->n_eviction > 1 && p->ev_rank != 0) {
-//            er = p->ev_rank;
-        if (true) {
-#elif defined(USE_HYPERBOLIC)
-        if (p->n_req > REBALANCE_INTVL/100 && p->nslabs > 1) {
-#if REBALANCE_METRIC == EVICTION_RATE
-            er = (double) p->n_eviction / p->n_req;
-//            p->n_req = 0;
-//            p->n_eviction = 0;
-#elif REBALANCE_METRIC == EVICTION_AGE
-            er = (double) (p->ev_age_sum)/p->n_eviction;
-//            p->ev_age_sum = 0;
-//            p->n_eviction = 0;
-#endif
-#endif
-            if (max_evict_slab_class == 0) {
-                max_evict = er;
-                min_evict = er;
-                max_evict_slab_class = i;
-                min_evict_slab_class = i;
+        if (p->nslabs > 1) {
+            double rank = cal_slabclass_rank(p); 
+            if (max_rank_slab_class == 0) {
+                max_rank = rank;
+                min_rank = rank;
+                max_rank_slab_class = i;
+                min_rank_slab_class = i;
                 continue;
             }
-            if (er > max_evict) {
-                max_evict = er;
-                max_evict_slab_class = i;
+            if (rank > max_rank) {
+                max_rank = rank;
+                max_rank_slab_class = i;
             }
-            if (er < min_evict) {
-                min_evict = er;
-                min_evict_slab_class = i;
+            if (rank < min_rank) {
+                min_rank = rank;
+                min_rank_slab_class = i;
             }
+
             p->ev_age_sum = 0;
             p->n_req = 0;
             p->n_eviction = 0;
         }
     }
 
-    if (max_evict_slab_class != min_evict_slab_class &&
-            max_evict > min_evict * 1.2) {
-#if REBALANCE_METRIC == EVICTION_RATE
-        int move_out_slab_class = min_evict_slab_class;
-        int move_in_slab_class = max_evict_slab_class;
-#elif REBALANCE_METRIC == EVICTION_AGE
-        int move_out_slab_class = max_evict_slab_class;
-        int move_in_slab_class = min_evict_slab_class;
-#endif
-        p = &slabclasses[move_out_slab_class];
-        struct slab *slab = p->slab_list[0];
-        if (p->nslabs > 1) {
-            p->slab_list[0] = p->slab_list[--p->nslabs];
-        } else {
-            p->slab_list[0] = NULL;
-            p->nslabs --;
-        }
+    if (max_rank_slab_class != min_rank_slab_class) {
+        p = &slabclasses[min_rank_slab_class];
+        int slab_idx = rand() % (p->nslabs);
+        struct slab *slab = p->slab_list[slab_idx];
+        p->slab_list[0] = p->slab_list[--p->nslabs];
+
         _slab_evict_one(slab);
-        _slab_init(slab, move_in_slab_class);
+        _slab_init(slab, max_rank_slab_class);
+
+
         log_info("move slab from class %d to %d now %d %d slabs"
                  ", eviction rate (age) %.4lf %.4lf"
                 ,
@@ -1077,6 +1042,9 @@ void rebalance_slab(void) {
                 min_evict, max_evict
                 );
 //        print_nslab();
+        // printf("move slab from %d to %d class\n", min_rank_slab_class, max_rank_slab_class);
+    } else {
+        // printf("does not move slab %d %d\n", min_rank_slab_class, max_rank_slab_class);
     }
 }
 
