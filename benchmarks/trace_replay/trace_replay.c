@@ -145,6 +145,8 @@ benchmark_create(struct benchmark *b, const char *config)
         trace_type = TRACE_ORACLE_SYS_TWR_NS;
     } else if (strcasecmp(trace_type_str, "oracleGeneral") == 0) {
         trace_type = TRACE_ORACLE_GENERAL;
+    } else if (strcasecmp(trace_type_str, "twr") == 0) {
+        trace_type = TRACE_TWR;
     } else {
         printf("unknown trace type %s\n", trace_type_str); 
         abort();
@@ -211,13 +213,13 @@ trace_replay_run(void)
     int32_t last_print = 0;
     while (read_trace(reader) == 0) {
         proc_sec = reader->curr_ts * time_speedup;
-        if (time_proc_sec() % 86400 == 0 && time_proc_sec() != last_print) {
+        if (time_proc_sec() - last_print >= 86400 && time_proc_sec() != last_print) {
             last_print = time_proc_sec();
             duration_snapshot(&d1, &d);
             duration_stop(&d1);
             double ds = duration_sec(&d1);
-            printf("%.2lf hour, run %.2lf sec, throughput %.2lf MQPS, %ld %ld requests, miss ratio %.4lf\n",
-                   (double) time_proc_sec()/3600.0, ds, (double) n_req / 1000000.0 / ds, n_req, n_get_req, (double) n_miss / (double) n_get_req);
+            printf("%.2lf hour, run %.2lf sec, throughput %.2lf MQPS, %ld requests, miss ratio %.4lf\n",
+                   (double) time_proc_sec()/3600.0, ds, (double) n_req / 1000000.0 / ds, n_get_req, (double) n_miss / (double) n_get_req);
         }
 
         if ((!has_warmup) && reader->curr_ts > warmup_time) {
@@ -423,6 +425,8 @@ main(int argc, char *argv[])
     pthread_setname_np(pthread_self(), "main");
 #endif
 
+    srand(time(NULL)); 
+
     struct benchmark b;
     struct duration d;
     if (benchmark_create(&b, argv[1]) != 0) {
@@ -444,12 +448,12 @@ main(int argc, char *argv[])
     printf("average operation latency: %.2lf ns, miss ratio %.4lf\n",
             duration_ns(&d) / n_req, (double)n_miss / n_get_req);
 
-    for (op_e op = op_get; op < op_invalid; op++) {
-        if (op_cnt[op] == 0)
-            continue;
-        printf("op %16s %16"PRIu64 "(%.4lf)\n", op_names[op], op_cnt[op],
-                (double)op_cnt[op]/n_req);
-    }
+    // for (op_e op = op_get; op < op_invalid; op++) {
+    //     if (op_cnt[op] == 0)
+    //         continue;
+    //     printf("op %16s %16"PRIu64 "(%.4lf)\n", op_names[op], op_cnt[op],
+    //             (double)op_cnt[op]/n_req);
+    // }
 
     benchmark_destroy(&b);
     bench_storage_deinit();

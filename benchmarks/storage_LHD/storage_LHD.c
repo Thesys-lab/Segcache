@@ -227,7 +227,7 @@ bench_storage_cas(struct benchmark_entry *e)
     }
     __atomic_fetch_sub(&it->refcount, 1, __ATOMIC_RELAXED);
 
-    uint64_t cas = item_get_cas(it);
+    item_get_cas(it);
 
     struct bstring val = {.data = e->val, .len = e->val_len};
     item_rstatus_e status =
