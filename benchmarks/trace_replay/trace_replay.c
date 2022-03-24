@@ -141,12 +141,14 @@ benchmark_create(struct benchmark *b, const char *config)
     trace_type_e trace_type; 
     if (strcasecmp(trace_type_str, "twrns") == 0) {
         trace_type = TRACE_TWRNS;
+    } else if (strcasecmp(trace_type_str, "twr") == 0) {
+        trace_type = TRACE_TWR;
+    } else if (strcasecmp(trace_type_str, "oracleSimTwrNS") == 0) {
+        trace_type = TRACE_ORACLE_SIM_TWR_NS;
     } else if (strcasecmp(trace_type_str, "oracleSysTwrNS") == 0) {
         trace_type = TRACE_ORACLE_SYS_TWR_NS;
     } else if (strcasecmp(trace_type_str, "oracleGeneral") == 0) {
         trace_type = TRACE_ORACLE_GENERAL;
-    } else if (strcasecmp(trace_type_str, "twr") == 0) {
-        trace_type = TRACE_TWR;
     } else {
         printf("unknown trace type %s\n", trace_type_str); 
         abort();

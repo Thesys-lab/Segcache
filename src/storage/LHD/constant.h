@@ -25,7 +25,7 @@
 #define USE_RANDOM_EXPIRE    1
 
 #define REAL_COPY
-#define USE_SLAB_REBALANCE	 1
+// #define USE_SLAB_REBALANCE	 1
 
 
 

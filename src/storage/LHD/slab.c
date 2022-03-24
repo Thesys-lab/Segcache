@@ -995,6 +995,12 @@ void rebalance_slab(void) {
 
 #ifndef USE_SLAB_REBALANCE
     return; 
+#else 
+    static bool has_print = false; 
+    if (!has_print) {
+        printf("rebalance slab is on\n"); 
+        has_print = true;
+    }
 #endif
 
     for (int i = SLABCLASS_MIN_ID; i <= profile_last_id; i++) {

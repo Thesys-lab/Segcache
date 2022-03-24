@@ -21,6 +21,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sysexits.h>
+#include <assert.h>
 
 
 static char val_array[MAX_VAL_LEN] = {'A'};
@@ -89,10 +90,11 @@ open_trace(const char *trace_path, const trace_type_e trace_type, const int32_t 
     reader->start_ts = ts;
 
     switch (reader->trace_type) {
-        case TRACE_TWR: reader->trace_entry_size = 20;
-        case TRACE_TWRNS: reader->trace_entry_size = 20;
-        case TRACE_ORACLE_SYS_TWR_NS: reader->trace_entry_size = 34;
-        case TRACE_ORACLE_GENERAL: reader->trace_entry_size = 24;
+        case TRACE_TWR: reader->trace_entry_size = 20; break; 
+        case TRACE_TWRNS: reader->trace_entry_size = 20; break; 
+        case TRACE_ORACLE_SYS_TWR_NS: reader->trace_entry_size = 34; break; 
+        case TRACE_ORACLE_SIM_TWR_NS: reader->trace_entry_size = 30; break; 
+        case TRACE_ORACLE_GENERAL: reader->trace_entry_size = 24; break; 
     }
     
 
@@ -135,7 +137,7 @@ open_trace(const char *trace_path, const trace_type_e trace_type, const int32_t 
 int
 read_trace_twr(struct reader *reader)
 {
-    ASSERT(reader->trace_entry_size == 20); /* hard-coded for the trace type */
+    assert(reader->trace_entry_size == 20); /* hard-coded for the trace type */
     size_t offset = __atomic_fetch_add(&reader->offset, 20, __ATOMIC_RELAXED);
     if (offset >= reader->file_size) {
         return 1;
@@ -192,15 +194,45 @@ read_trace_twr(struct reader *reader)
 }
 
 int
-read_trace_twrNS(struct reader *reader)
+read_trace_oracleSimTwrNS(struct reader *reader)
 {
-    abort();
+    assert(reader->trace_entry_size == 30); /* hard-coded for the trace type */
+    size_t offset = __atomic_fetch_add(&reader->offset, reader->trace_entry_size, __ATOMIC_RELAXED);
+    if (offset >= reader->file_size) {
+        return 1;
+    }
+
+    char *mmap = reader->mmap + offset;
+
+    uint32_t ts = *(uint32_t *)mmap - reader->start_ts + 1;
+    reader->curr_ts = (int32_t) ts;
+    if (reader->update_time) {
+        __atomic_store_n(&proc_sec, reader->curr_ts, __ATOMIC_RELAXED);
+    }
+
+    uint64_t key = *(uint64_t *)(mmap + 4);
+    *(uint64_t *) (reader->e->key) = key + reader->reader_id * 10000000000;
+
+    reader->e->key_len = 8;
+    reader->e->val_len = *(uint32_t *)(mmap + 12);
+    if (reader->e->val_len > 1048500)
+        reader->e->val_len = 1048500; 
+
+    reader->e->op = op_get;
+    reader->e->ttl = *(uint32_t *)(mmap + 16);
+    reader->e->ttl = 2000000;
+    reader->e->expire_at = (int) (ts + reader->e->ttl);
+
+    // int ns = *(uint16_t *)(mmap + 20); 
+    // int next_access_vtime = *(int64_t *) (mmap + 22); 
+
+    return 0;
 }
 
 int
 read_trace_oracleSysTwrNS(struct reader *reader)
 {
-    ASSERT(reader->trace_entry_size == 34); /* hard-coded for the trace type */
+    assert(reader->trace_entry_size == 34); /* hard-coded for the trace type */
     size_t offset = __atomic_fetch_add(&reader->offset, 34, __ATOMIC_RELAXED);
     if (offset >= reader->file_size) {
         return 1;
@@ -278,7 +310,7 @@ read_trace_oracleSysTwrNS(struct reader *reader)
 int
 read_trace_oracleGeneral(struct reader *reader)
 {
-    ASSERT(reader->trace_entry_size == 24); /* hard-coded for the trace type */
+    assert(reader->trace_entry_size == 24); /* hard-coded for the trace type */
     size_t offset = __atomic_fetch_add(&reader->offset, reader->trace_entry_size, __ATOMIC_RELAXED);
     if (offset >= reader->file_size) {
         return 1;
@@ -309,9 +341,11 @@ read_trace_oracleGeneral(struct reader *reader)
 
 int read_trace(struct reader *reader) {
     if (reader->trace_type == TRACE_TWRNS) {
-        return read_trace_twrNS(reader); 
+        return read_trace_twr(reader); 
     } else if (reader->trace_type == TRACE_ORACLE_SYS_TWR_NS) {
         return read_trace_oracleSysTwrNS(reader);
+    } else if (reader->trace_type == TRACE_ORACLE_SIM_TWR_NS) {
+        return read_trace_oracleSimTwrNS(reader);
     } else if (reader->trace_type == TRACE_ORACLE_GENERAL) {
         return read_trace_oracleGeneral(reader);
     } else if (reader->trace_type == TRACE_TWR) {

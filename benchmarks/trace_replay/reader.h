@@ -14,6 +14,7 @@ struct benchmark_entry;
 
 typedef enum {
     TRACE_TWRNS,
+    TRACE_ORACLE_SIM_TWR_NS,
     TRACE_ORACLE_SYS_TWR_NS, 
     TRACE_ORACLE_GENERAL, 
     TRACE_TWR,
