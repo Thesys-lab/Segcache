@@ -6,6 +6,8 @@ This repo contains the code of Segcache described in the following paper:
 ## Note
 Segcache has been re-implemented in Rust version of [Pelikan](http://www.github.com/twitter/pelikan/), and this repo is not maintained anymore. 
 
+**Previous version of Segcache did not turn off STAT which causes it to be less scalable. Please clone the new repo.**
+
 
 ## Repository structure 
 * [benchmarks](benchmark): code for running the evaluation benchmarks 
@@ -21,15 +23,11 @@ Segcache has been re-implemented in Rust version of [Pelikan](http://www.github.
 ### Build
 ```sh
 git clone https://github.com/Thesys-lab/Segcache.git
-mkdir _build && cd _build
+cd Segcache && mkdir _build && cd _build
 cmake ..
 make -j
 ```
 The executables can be found under ``_benchmarks/`` (under build directory)
-
-when debugging you can turn on debug mode and assert by 
-`cmake -DCMAKE_BUILD_TYPE=Debug -DHAVE_ASSERT_PANIC=on ..`
-
 
 
 ### Run benchmarks 
