@@ -36,8 +36,6 @@ bench_storage_init(void *opts, size_t item_size, size_t nentries)
         if (options->heap_mem.val.vuint < 1UL * GiB) {
             options->heap_mem.val.vuint = 1UL * GiB;
         }
-//        printf("item size max %zu, seg allocate %.2lf GB heap\n",
-//                item_size, (double) options->seg_mem.val.vuint/GiB);
 
         /* also update hash table hash power */
         options->hash_power.val.vuint = (uint64_t)(ceil(log2(nentries)));

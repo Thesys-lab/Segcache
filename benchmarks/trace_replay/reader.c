@@ -128,7 +128,10 @@ int
 read_trace1(struct reader *reader)
 {
     ASSERT(reader->trace_entry_size == 20); /* hard-coded for the trace type */
+
     size_t offset = __atomic_fetch_add(&reader->offset, 20, __ATOMIC_RELAXED);
+    // size_t offset = reader->offset;
+    // reader->offset += 20;
     if (offset >= reader->file_size) {
         return 1;
     }
@@ -192,8 +195,8 @@ read_trace1(struct reader *reader)
 int
 read_trace2(struct reader *reader)
 {
-    ASSERT(reader->trace_entry_size == 34); /* hard-coded for the trace type */
-    size_t offset = __atomic_fetch_add(&reader->offset, 34, __ATOMIC_RELAXED);
+    ASSERT(reader->trace_entry_size == 24); /* hard-coded for the trace type */
+    size_t offset = __atomic_fetch_add(&reader->offset, 24, __ATOMIC_RELAXED);
     if (offset >= reader->file_size) {
         return 1;
     }
@@ -207,69 +210,25 @@ read_trace2(struct reader *reader)
     }
 
     uint64_t key = *(uint64_t *)(mmap + 4);
-    uint8_t key_len = *(uint16_t *)(mmap + 12);
-    if (key_len < 8)
-        key_len = 8;
-    uint32_t val_len = *(uint32_t *)(mmap + 14);
-
-    op_e op = op_invalid;
-    if (val_len > 1048000) {
-        return read_trace(reader);
-    }
-
-    switch (*(uint16_t *)(mmap + 18)) {
-        case 1:
-        case 2:
-        case 4:
-        case 5:
-        case 7:
-        case 8:
-        case 10:
-        case 11:
-            op = op_get;
-            break;
-        case 3:
-        case 6:
-            op = op_set;
-            break;
-        case 9:
-            op = op_delete;
-            break;
-        default:
-            printf("unsupported request op %d\n", (int)(*(uint16_t *)(mmap + 18)));
-            op = op_invalid;
-            break;
-    }
-
-    uint16_t ns = *(uint16_t *) (mmap + 20);
-    uint32_t ttl = *(int32_t *)(mmap + 22);
-
-    if (ttl == 0) {
-        ttl = 86400;
-    }
-
-    if (reader->nottl) {
-        ttl = 2000000;
-    }
+    uint32_t val_len = *(uint32_t *)(mmap + 12);
+    uint32_t ttl = 2000000;
+    // ttl = reader->default_ttls[reader->default_ttl_idx];
+    // reader->default_ttl_idx = (reader->default_ttl_idx + 1) % 100;
 
     *(uint64_t *) (reader->e->key) = key + reader->reader_id * 10000000000;
 
-//    /* it is possible we have overflow here, but it should be rare */
-//    snprintf(reader->e->key, key_len, "%.*lu", key_len-1, (unsigned long)key);
-
-    reader->e->key_len = key_len;
-    reader->e->val_len = val_len;
-    reader->e->op = op;
+    reader->e->key_len = 8;
+    reader->e->val_len = val_len - 8;
+    reader->e->op = op_get;
     reader->e->ttl = (int) ttl;
     reader->e->expire_at = (int) (ts + ttl);
-    reader->e->ns = ns;
     return 0;
 }
 
 int read_trace(struct reader *reader) {
     if (reader->trace_entry_size == 20) {
         return read_trace1(reader); 
-    } else if (reader->trace_entry_size == 34) {
+    } else if (reader->trace_entry_size == 24) {
         return read_trace2(reader);
     } else {
         printf("unsupported trace entry size %ld\n", reader->trace_entry_size);

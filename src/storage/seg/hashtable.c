@@ -732,10 +732,10 @@ hashtable_get(const char *key, const uint32_t klen,
     static uint64_t scan_len_sum = 0;
     static uint64_t scan_cnt = 0;
 
-    scan_cnt += 1;
-    if (scan_cnt % 100000000 == 0) {
-        printf("%.2lf\n", (double) scan_len_sum / scan_cnt);
-    }
+    // scan_cnt += 1;
+    // if (scan_cnt % 100000000 == 0) {
+    //     printf("%.2lf\n", (double) scan_len_sum / scan_cnt);
+    // }
 
     lock(first_bkt);
 
