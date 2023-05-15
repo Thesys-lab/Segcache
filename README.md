@@ -40,7 +40,7 @@ To run them, you can do
 
 We provide example config to run the two benchmarks at `benchmarks/config/examples/`. Before using it, you need to change the options, specifically, you need to change `trace_path` to the path of your trace. 
 
-We release the five traces we use [here](https://ftp.pdl.cmu.edu/pub/datasets/twemcacheWorkload/nsdi21_binary/). 
+We release the five traces we use [here](https://ftp.pdl.cmu.edu/pub/datasets/twemcacheWorkload/nsdi21_segcache/). 
 The traces are comparessed with zstd, you can use 
 ```
 zstd -d c.sbin.zst
